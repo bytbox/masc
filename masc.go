@@ -21,6 +21,6 @@ func main() {
 		return
 	}
 
-	Compose()
-	GUIMain()
+	//Compose()
+	//GUIMain()
 }
