@@ -20,4 +20,7 @@ func main() {
 		fmt.Printf("Masc %s\n", VERSION)
 		return
 	}
+
+	Compose()
+	GUIMain()
 }
