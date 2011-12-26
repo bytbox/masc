@@ -10,7 +10,7 @@ import (
 const VERSION = `0.1`
 
 var (
-	version = flag.Bool("V", false, "Display version ifnormation and exit")
+	version = flag.Bool("V", false, "Display version information and exit")
 )
 
 func main() {
