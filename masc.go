@@ -15,6 +15,10 @@ func main() {
 	window.SetPosition(gtk.GTK_WIN_POS_CENTER)
 	window.SetTitle("GTK Go!")
 
+	window.Connect("destroy", func(ctx interface{}) {
+		gtk.MainQuit()
+	}, "foo")
+
 	window.SetSizeRequest(600, 600)
 	window.ShowAll()
 
