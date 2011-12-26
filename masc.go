@@ -21,6 +21,9 @@ func main() {
 		return
 	}
 
+	// attempt to fetch all mail
+	testFetch()
+
 	//Compose()
 	//GUIMain()
 }

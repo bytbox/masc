@@ -7,7 +7,7 @@ import (
 )
 
 // Represents an outgoing message.
-type Outgoing struct{
+type Outgoing struct {
 	From    string
 	To      []string
 	Subject string
