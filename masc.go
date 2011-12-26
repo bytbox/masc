@@ -2,25 +2,22 @@ package main
 
 import (
 	"flag"
+	"fmt"
 
-	"github.com/mattn/go-gtk/gtk"
+	//"github.com/bytbox/kakapo/lisp"
+)
+
+const VERSION = `0.1`
+
+var (
+	version = flag.Bool("V", false, "Display version ifnormation and exit")
 )
 
 func main() {
 	flag.Parse()
 
-	gtk.Init(nil)
-
-	window := gtk.Window(gtk.GTK_WINDOW_TOPLEVEL)
-	window.SetPosition(gtk.GTK_WIN_POS_CENTER)
-	window.SetTitle("GTK Go!")
-
-	window.Connect("destroy", func(ctx interface{}) {
-		gtk.MainQuit()
-	}, "foo")
-
-	window.SetSizeRequest(600, 600)
-	window.ShowAll()
-
-	gtk.Main()
+	if *version {
+		fmt.Printf("Masc %s\n", VERSION)
+		return
+	}
 }

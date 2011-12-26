@@ -1,7 +1,7 @@
 include ${GOROOT}/src/Make.inc
 
 TARG = masc
-GOFILES = masc.go
+GOFILES = masc.go gtk.go
 
 include ${GOROOT}/src/Make.cmd
 
