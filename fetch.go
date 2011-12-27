@@ -7,8 +7,11 @@ import (
 func testFetch() {
 	c, err := DialTLS("imap.gmail.com:993")
 	if err != nil {
-		log.Print(err)
+		log.Print(err.Error())
 	}
 
-	c.Noop()
+	err = c.Noop()
+	if err != nil {
+		log.Print(err.Error())
+	}
 }

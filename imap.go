@@ -1,7 +1,15 @@
+// Package imap implements the Internet Message Access Protocol as defined in
+// RFC 3501.
+//
+// This implementation is thread-safe, but does not take advantage of all the
+// parallelism provided for in the standard. Commands will be performed
+// sequentially.
+
 package main
 
 import (
 	"crypto/tls"
+	"fmt"
 	"net"
 	tp "net/textproto"
 	"strings"
@@ -42,13 +50,41 @@ func NewClient(conn net.Conn, host string) (*Client, error) {
 	return client, nil
 }
 
-func (c *Client) cmd() {
+func (c *Client) cmd(format string, args ...interface{}) error {
+	t := c.Text
+	id := t.Next()
+	t.StartRequest(id)
+	err := t.PrintfLine("x%d %s", id, fmt.Sprintf(format, args...))
+	t.EndRequest(id)
 
+	t.StartResponse(id)
+	defer t.EndResponse(id)
+
+	l, err := t.ReadLine()
+	if err != nil {
+		return err
+	}
+	for isUntagged(l) {
+		println(l)
+		l, err = t.ReadLine()
+		if err != nil {
+			return err
+		}
+	}
+	println(l)
+
+	return err
 }
 
-// Noop sends a NOOP command to the server.
-func (c *Client) Noop() {
+func isUntagged(l string) bool {
+	return l[0:2] == "* "
+}
 
+// Noop sends a NOOP command to the server, which may be abused to test that
+// the connection is still working, or keep it active.
+func (c *Client) Noop() error {
+	err := c.cmd("NOOP")
+	return err
 }
 
 // Login authenticates a client using the provided username and password. This
