@@ -4,11 +4,15 @@
 // This implementation is thread-safe, but does not take advantage of all the
 // parallelism provided for in the standard. Commands will be performed
 // sequentially.
+//
+// Untagged IMAP responses are parsed into a Mailbox struct, which tracks all
+// currently known information concerning the state of the remote mailbox.
 
 package main
 
 import (
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"net"
 	tp "net/textproto"
@@ -50,11 +54,18 @@ func NewClient(conn net.Conn, host string) (*Client, error) {
 	return client, nil
 }
 
+func (c *Client) handleUntagged(l string) {
+	println(l)
+}
+
 func (c *Client) cmd(format string, args ...interface{}) error {
 	t := c.Text
 	id := t.Next()
 	t.StartRequest(id)
 	err := t.PrintfLine("x%d %s", id, fmt.Sprintf(format, args...))
+	if err != nil {
+		return err
+	}
 	t.EndRequest(id)
 
 	t.StartResponse(id)
@@ -65,15 +76,18 @@ func (c *Client) cmd(format string, args ...interface{}) error {
 		return err
 	}
 	for isUntagged(l) {
-		println(l)
+		c.handleUntagged(l)
 		l, err = t.ReadLine()
 		if err != nil {
 			return err
 		}
 	}
-	println(l)
 
-	return err
+	l = strings.SplitN(l, " ", 2)[1]
+	if l[0:2] == "OK" {
+		return nil
+	}
+	return errors.New(l)
 }
 
 func isUntagged(l string) bool {
@@ -89,11 +103,11 @@ func (c *Client) Noop() error {
 
 // Login authenticates a client using the provided username and password. This
 // method is only secure if TLS is being used.
-func (c *Client) Login(username, password string) {
-
+func (c *Client) Login(username, password string) error {
+	return c.cmd("LOGIN %s %s", username, password)
 }
 
 // Logout un-authenticates a client.
-func (c *Client) Logout() {
-
+func (c *Client) Logout() error {
+	return c.cmd("LOGOUT")
 }
