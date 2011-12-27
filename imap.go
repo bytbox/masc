@@ -41,3 +41,23 @@ func NewClient(conn net.Conn, host string) (*Client, error) {
 	}
 	return client, nil
 }
+
+func (c *Client) cmd() {
+
+}
+
+// Noop sends a NOOP command to the server.
+func (c *Client) Noop() {
+
+}
+
+// Login authenticates a client using the provided username and password. This
+// method is only secure if TLS is being used.
+func (c *Client) Login(username, password string) {
+
+}
+
+// Logout un-authenticates a client.
+func (c *Client) Logout() {
+
+}
