@@ -14,7 +14,15 @@ type Outgoing struct {
 	Body    string
 }
 
-func doSend(server, ident, uname, pass string, m *Outgoing) {
+type SMTPLogin struct {
+	Server string
+	Ident  string
+	Uname  string
+	Passwd string
+}
+
+func doSend(l *SMTPLogin, m *Outgoing) {
+	server, ident, uname, pass := l.Server, l.Ident, l.Uname, l.Passwd
 	err := smtp.SendMail(
 		server+":587",
 		smtp.PlainAuth(ident, uname, pass, server),
