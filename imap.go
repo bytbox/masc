@@ -1,5 +1,5 @@
-// Package imap implements the Internet Message Access Protocol as defined in
-// RFC 3501.
+// Package imap partially implements the Internet Message Access Protocol as
+// defined in RFC 3501.
 //
 // This implementation is thread-safe, but does not take advantage of all the
 // parallelism provided for in the standard. Commands will be performed
@@ -28,7 +28,16 @@ type Client struct {
 
 // Represents the current known state of the remote mailbox.
 type Mailbox struct {
-	Capabilities []string
+	capabilities []string
+}
+
+func (m *Mailbox) Capable(c string) bool {
+	for _, ca := range m.capabilities {
+		if c == ca {
+			return true
+		}
+	}
+	return false
 }
 
 func Dial(addr string) (*Client, error) {
@@ -55,7 +64,7 @@ func NewClient(conn net.Conn, host string) (*Client, error) {
 	client := &Client{
 		Text: text,
 		Box:  &Mailbox{
-			Capabilities: []string{},
+			capabilities: []string{},
 		},
 		conn: conn,
 		host: host,
@@ -66,13 +75,13 @@ func NewClient(conn net.Conn, host string) (*Client, error) {
 func (c *Client) handleUntagged(l string) {
 	switch l[0:strings.Index(l, " ")] {
 	case "CAPABILITY":
-		c.Box.Capabilities = strings.Split(l, " ")[1:]
+		c.Box.capabilities = strings.Split(l, " ")[1:]
 	default:
 		println(l)
 	}
 }
 
-func (c *Client) cmd(format string, args ...interface{}) error {
+func (c *Client) Cmd(format string, args ...interface{}) error {
 	t := c.Text
 	id := t.Next()
 	t.StartRequest(id)
@@ -97,6 +106,8 @@ func (c *Client) cmd(format string, args ...interface{}) error {
 		}
 	}
 
+	// TODO make sure the tagged response ends up in the right place. There
+	// really should be a goroutine to handle all of this.
 	l = strings.SplitN(l, " ", 2)[1]
 	if l[0:2] == "OK" {
 		return nil
@@ -111,21 +122,49 @@ func isUntagged(l string) bool {
 // Noop sends a NOOP command to the server, which may be abused to test that
 // the connection is still working, or keep it active.
 func (c *Client) Noop() error {
-	return c.cmd("NOOP")
+	return c.Cmd("NOOP")
 }
 
 // Capability determines the server's capabilities.
 func (c *Client) Capability() error {
-	return c.cmd("CAPABILITY")
+	return c.Cmd("CAPABILITY")
 }
 
 // Login authenticates a client using the provided username and password. This
-// method is only secure if TLS is being used.
+// method is only secure if TLS is being used. AUTHENTICATE and STARTTLS are
+// not supported.
 func (c *Client) Login(username, password string) error {
-	return c.cmd("LOGIN %s %s", username, password)
+	return c.Cmd("LOGIN %s %s", username, password)
 }
 
 // Logout closes the connection, after instructing the server to do the same.
 func (c *Client) Logout() error {
-	return c.cmd("LOGOUT")
+	return c.Cmd("LOGOUT")
 }
+
+// SELECT
+
+// EXAMINE
+
+// CREATE
+
+// DELETE
+
+// RENAME
+
+// SUBSCRIBE
+
+// UNSUBSCRIBE
+
+// List lists all folder within basename that match the wildcard expression mb.
+// The result is put into the Client's Mailbox struct.
+func (c *Client) List(basename, mb string) error {
+	return c.Cmd(`LIST "%s" "%s"`, basename, mb)
+}
+
+// LSUB
+
+// STATUS
+
+// APPEND
+

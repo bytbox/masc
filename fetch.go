@@ -21,5 +21,6 @@ func testFetch() {
 	runCmd(c.Capability())
 	runCmd(c.Login(flag.Args()[0], flag.Args()[1]))
 	runCmd(c.Capability())
+	runCmd(c.List("", "*"))
 	runCmd(c.Logout())
 }
