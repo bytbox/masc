@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 )
 
@@ -17,6 +18,6 @@ func testFetch() {
 	}
 
 	runCmd(c.Noop())
-	runCmd(c.Login("bytbox2", "hi"))
+	runCmd(c.Login(flag.Args()[0], flag.Args()[1]))
 	runCmd(c.Logout())
 }
