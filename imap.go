@@ -40,6 +40,8 @@ func (m *Mailbox) Capable(c string) bool {
 	return false
 }
 
+// Dial creates an unsecured connection to the IMAP server at the given address
+// and returns the corresponding Client.
 func Dial(addr string) (*Client, error) {
 	conn, err := net.Dial("tcp", addr)
 	if err != nil {
@@ -49,6 +51,8 @@ func Dial(addr string) (*Client, error) {
 	return NewClient(conn, host)
 }
 
+// DIalTLS creates a TLS_secured connection to the IMAP server at the given
+// address and returns the corresponding Client.
 func DialTLS(addr string) (*Client, error) {
 	conn, err := tls.Dial("tcp", addr, nil)
 	if err != nil {
@@ -167,4 +171,20 @@ func (c *Client) List(basename, mb string) error {
 // STATUS
 
 // APPEND
+
+// CHECK
+
+// CLOSE
+
+// EXPUNGE
+
+// SEARCH
+
+// FETCH
+
+// STORE
+
+// COPY
+
+// UID
 
