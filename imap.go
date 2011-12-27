@@ -21,8 +21,14 @@ import (
 
 type Client struct {
 	Text *tp.Conn
+	Box  *Mailbox
 	conn net.Conn
 	host string
+}
+
+// Represents the current known state of the remote mailbox.
+type Mailbox struct {
+	Capabilities []string
 }
 
 func Dial(addr string) (*Client, error) {
@@ -48,6 +54,9 @@ func NewClient(conn net.Conn, host string) (*Client, error) {
 	text := tp.NewConn(conn)
 	client := &Client{
 		Text: text,
+		Box:  &Mailbox{
+			Capabilities: []string{},
+		},
 		conn: conn,
 		host: host,
 	}
@@ -55,7 +64,12 @@ func NewClient(conn net.Conn, host string) (*Client, error) {
 }
 
 func (c *Client) handleUntagged(l string) {
-	println(l)
+	switch l[0:strings.Index(l, " ")] {
+	case "CAPABILITY":
+		c.Box.Capabilities = strings.Split(l, " ")[1:]
+	default:
+		println(l)
+	}
 }
 
 func (c *Client) cmd(format string, args ...interface{}) error {
@@ -76,7 +90,7 @@ func (c *Client) cmd(format string, args ...interface{}) error {
 		return err
 	}
 	for isUntagged(l) {
-		c.handleUntagged(l)
+		c.handleUntagged(l[2:])
 		l, err = t.ReadLine()
 		if err != nil {
 			return err
@@ -97,8 +111,12 @@ func isUntagged(l string) bool {
 // Noop sends a NOOP command to the server, which may be abused to test that
 // the connection is still working, or keep it active.
 func (c *Client) Noop() error {
-	err := c.cmd("NOOP")
-	return err
+	return c.cmd("NOOP")
+}
+
+// Capability determines the server's capabilities.
+func (c *Client) Capability() error {
+	return c.cmd("CAPABILITY")
 }
 
 // Login authenticates a client using the provided username and password. This
@@ -107,7 +125,7 @@ func (c *Client) Login(username, password string) error {
 	return c.cmd("LOGIN %s %s", username, password)
 }
 
-// Logout un-authenticates a client.
+// Logout closes the connection, after instructing the server to do the same.
 func (c *Client) Logout() error {
 	return c.cmd("LOGOUT")
 }
