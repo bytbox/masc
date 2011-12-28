@@ -32,7 +32,7 @@ type Client struct {
 	tMut *sync.Mutex
 }
 
-// Represents the current known state of the remote mailbox.
+// Represents the current known state of the remote server.
 type Mailbox struct {
 	capabilities []string
 	mut          *sync.RWMutex
@@ -195,9 +195,15 @@ func (c *Client) Examine(mb string) error {
 	return c.Cmd(`EXAMINE %s`, mb)
 }
 
-// CREATE
+// Create creates the named mailbox.
+func (c *Client) Create(mb string) error {
+	return c.Cmd(`CREATE %s`, mb)
+}
 
-// DELETE
+// Delete deletes the named mailbox.
+func (c *Client) Delete(mb string) error {
+	return c.Cmd(`DELETE %s`, mb)
+}
 
 // RENAME
 
