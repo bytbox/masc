@@ -205,7 +205,10 @@ func (c *Client) Delete(mb string) error {
 	return c.Cmd(`DELETE %s`, mb)
 }
 
-// RENAME
+// Rename renames the named mailbox to the new name.
+func (c *Client) Rename(mb, name string) error {
+	return c.Cmd(`RENAME %s %s`, mb, name)
+}
 
 // SUBSCRIBE
 
