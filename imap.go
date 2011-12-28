@@ -301,9 +301,16 @@ func (c *Client) Check() error {
 	return c.Cmd(`CHECK`)
 }
 
-// CLOSE
+// Close closes the selected mailbox, permanently deleting any marked messages
+// in the process.
+func (c *Client) Close() error {
+	return c.Cmd(`CLOSE`)
+}
 
-// EXPUNGE
+// Expunge permanently removes all marked messages in the selected mailbox.
+func (c *Client) Expunge() error {
+	return c.Cmd(`EXPUNGE`)
+}
 
 // SEARCH
 

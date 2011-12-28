@@ -26,5 +26,8 @@ func testFetch() {
 
 	runCmd(c.Status("INBOX", "MESSAGES", "RECENT", "UIDNEXT"))
 
+	runCmd(c.Select("INBOX"))
+	runCmd(c.Close())
+
 	runCmd(c.Logout())
 }
