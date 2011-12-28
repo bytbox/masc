@@ -228,7 +228,11 @@ func (c *Client) List(basename, mb string) error {
 	return c.Cmd(`LIST "%s" "%s"`, basename, mb)
 }
 
-// LSUB
+// Lsub is like List, but only operates on "active" mailboxes, as set with
+// Subscribe and Unsubscribe.
+func (c *Client) Lsub(basename, mb string) error {
+	return c.Cmd(`LSUB "%s" "%s"`, basename, mb)
+}
 
 // STATUS
 
