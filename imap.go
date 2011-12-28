@@ -187,39 +187,39 @@ func (c *Client) Logout() error {
 // Select selects the specified IMAP mailbox, updating its information in the
 // Mailbox object.
 func (c *Client) Select(mb string) error {
-	return c.Cmd(`SELECT %s`, mb)
+	return c.Cmd(`SELECT "%s"`, mb)
 }
 
 // Examine is identical to select, but marks the mailbox read-only.
 func (c *Client) Examine(mb string) error {
-	return c.Cmd(`EXAMINE %s`, mb)
+	return c.Cmd(`EXAMINE "%s"`, mb)
 }
 
 // Create creates the named mailbox.
 func (c *Client) Create(mb string) error {
-	return c.Cmd(`CREATE %s`, mb)
+	return c.Cmd(`CREATE "%s"`, mb)
 }
 
 // Delete deletes the named mailbox.
 func (c *Client) Delete(mb string) error {
-	return c.Cmd(`DELETE %s`, mb)
+	return c.Cmd(`DELETE "%s"`, mb)
 }
 
 // Rename renames the named mailbox to the new name.
 func (c *Client) Rename(mb, name string) error {
-	return c.Cmd(`RENAME %s %s`, mb, name)
+	return c.Cmd(`RENAME "%s" "%s"`, mb, name)
 }
 
 // Subscribe adds the named mailbox to the list of "active" or "subscribed"
 // mailboxes, to be used with Lsub .
 func (c *Client) Subscribe(mb string) error {
-	return c.Cmd(`SUBSCRIBE %s`, mb)
+	return c.Cmd(`SUBSCRIBE "%s"`, mb)
 }
 
 // Unsubscribe removes the named mailbox from the server's list of "active"
 // mailboxes.
 func (c *Client) Unsubscribe(mb string) error {
-	return c.Cmd(`UNSUBSCRIBE %s`, mb)
+	return c.Cmd(`UNSUBSCRIBE "%s"`, mb)
 }
 
 // List lists all folder within basename that match the wildcard expression mb.
@@ -234,7 +234,10 @@ func (c *Client) Lsub(basename, mb string) error {
 	return c.Cmd(`LSUB "%s" "%s"`, basename, mb)
 }
 
-// STATUS
+// Status queries the specified statuses of the indicated mailbox.
+func (c *Client) Status(mb string, ss ...string) {
+
+}
 
 // APPEND
 
@@ -254,3 +257,6 @@ func (c *Client) Lsub(basename, mb string) error {
 
 // UID
 
+// Converts a slice of strings to a parenthesized list of space-separated
+// strings.
+//func sliceAsString
