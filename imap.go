@@ -20,7 +20,8 @@ import (
 	"sync"
 )
 
-// The IMAP client.
+// The IMAP client. All methods on the client are thread-safe and executed
+// synchronously.
 type Client struct {
 	// The underlying textproto connection may be used to extend the
 	// functionality of this package; however, using Client.Cmd instead is
