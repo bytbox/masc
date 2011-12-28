@@ -320,7 +320,12 @@ func (c *Client) Expunge() error {
 
 // STORE remains unimplemented.
 
-// COPY
+// Copy copied the specified message(s) to the destination mailbox. The order
+// of arguments to this method is the opposite of that actually sent to the
+// server.
+func (c *Client) Copy(dest string, msgs ...string) error {
+	return c.Cmd(`COPY %s %s`, strings.Join(msgs, ","), dest)
+}
 
 // UID
 
