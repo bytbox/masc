@@ -1,6 +1,6 @@
 // Package imap partially implements the Internet Message Access Protocol as
-// defined in RFC 3501. Specifically, AUTHENTICATE, STARTLS, and SEARCH remain
-// unimplemented.
+// defined in RFC 3501. Specifically, AUTHENTICATE, STARTLS, SEARCH, and STORE
+// remain unimplemented.
 //
 // Untagged IMAP responses are parsed into a Mailbox struct, which tracks all
 // currently known information concerning the state of the remote mailbox.
@@ -318,7 +318,7 @@ func (c *Client) Expunge() error {
 
 // FETCH
 
-// STORE
+// STORE remains unimplemented.
 
 // COPY
 
