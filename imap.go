@@ -210,9 +210,17 @@ func (c *Client) Rename(mb, name string) error {
 	return c.Cmd(`RENAME %s %s`, mb, name)
 }
 
-// SUBSCRIBE
+// Subscribe adds the named mailbox to the list of "active" or "subscribed"
+// mailboxes, to be used with Lsub .
+func (c *Client) Subscribe(mb string) error {
+	return c.Cmd(`SUBSCRIBE %s`, mb)
+}
 
-// UNSUBSCRIBE
+// Unsubscribe removes the named mailbox from the server's list of "active"
+// mailboxes.
+func (c *Client) Unsubscribe(mb string) error {
+	return c.Cmd(`UNSUBSCRIBE %s`, mb)
+}
 
 // List lists all folder within basename that match the wildcard expression mb.
 // The result is put into the Client's Mailbox struct.
