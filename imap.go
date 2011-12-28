@@ -234,9 +234,19 @@ func (c *Client) Lsub(basename, mb string) error {
 	return c.Cmd(`LSUB "%s" "%s"`, basename, mb)
 }
 
-// Status queries the specified statuses of the indicated mailbox.
-func (c *Client) Status(mb string, ss ...string) {
-
+// Status queries the specified statuses of the indicated mailbox. This command
+// should not be used on the currently selected mailbox. The legal status items
+// are:
+//
+//	MESSAGES	The number of messages in the mailbox.
+//	RECENT		The number of messages with the \Recent flag set.
+//	UIDNEXT		The next unique identifier value of the mailbox.
+//	UIDVALIDITY	The unique identifier validity value of the mailbox.
+//	UNSEEN		The number of messages which do not have the \Seen flag set.
+//
+func (c *Client) Status(mb string, ss ...string) error {
+	st := sliceAsString(ss)
+	return c.Cmd(`STATUS "%s" %s`, mb, st)
 }
 
 // APPEND
@@ -259,4 +269,6 @@ func (c *Client) Status(mb string, ss ...string) {
 
 // Converts a slice of strings to a parenthesized list of space-separated
 // strings.
-//func sliceAsString
+func sliceAsString(ss []string) string {
+	return "(" + strings.Join(ss, " ") + ")"
+}

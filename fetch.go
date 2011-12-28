@@ -22,8 +22,8 @@ func testFetch() {
 	runCmd(c.Login(flag.Args()[0], flag.Args()[1]))
 	runCmd(c.Capability())
 
-	runCmd(c.Create("hi"))
 	runCmd(c.List("", "*"))
-	runCmd(c.Delete("hi"))
+
+	runCmd(c.Status("INBOX", "MESSAGES", "RECENT", "UIDNEXT"))
 	runCmd(c.Logout())
 }
