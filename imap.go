@@ -3,6 +3,8 @@
 //
 // Untagged IMAP responses are parsed into a Mailbox struct, which tracks all
 // currently known information concerning the state of the remote mailbox.
+// Because no significant information is returned through tagged responses,
+// interaction with Mailbox is necessary for all queries.
 
 package main
 
@@ -17,6 +19,7 @@ import (
 	"sync"
 )
 
+// The IMAP client.
 type Client struct {
 	// The underlying textproto connection may be used to extend the
 	// functionality of this package; however, using Client.Cmd instead is
@@ -181,9 +184,16 @@ func (c *Client) Logout() error {
 	return c.Cmd("LOGOUT")
 }
 
-// SELECT
+// Select selects the specified IMAP mailbox, updating its information in the
+// Mailbox object.
+func (c *Client) Select(mb string) error {
+	return c.Cmd(`SELECT %s`, mb)
+}
 
-// EXAMINE
+// Examine is identical to select, but marks the mailbox read-only.
+func (c *Client) Examine(mb string) error {
+	return c.Cmd(`EXAMINE %s`, mb)
+}
 
 // CREATE
 
