@@ -1,6 +1,7 @@
 // Package imap partially implements the Internet Message Access Protocol as
 // defined in RFC 3501. Specifically, AUTHENTICATE, STARTLS, SEARCH, and STORE
-// remain unimplemented.
+// remain unimplemented. Note also that UIDs are used in place of sequence
+// numbers for all commands.
 //
 // Untagged IMAP responses are parsed into a Mailbox struct, which tracks all
 // currently known information concerning the state of the remote mailbox.
@@ -322,12 +323,11 @@ func (c *Client) Expunge() error {
 
 // Copy copied the specified message(s) to the destination mailbox. The order
 // of arguments to this method is the opposite of that actually sent to the
-// server.
+// server. Note that the messages are to be specified via UIDs, rather than
+// sequence numbers.
 func (c *Client) Copy(dest string, msgs ...string) error {
-	return c.Cmd(`COPY %s %s`, strings.Join(msgs, ","), dest)
+	return c.Cmd(`UID COPY %s %s`, strings.Join(msgs, ","), dest)
 }
-
-// UID
 
 // Converts a slice of strings to a parenthesized list of space-separated
 // strings.
