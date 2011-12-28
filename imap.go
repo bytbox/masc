@@ -296,7 +296,10 @@ func (c *Client) Append(mb, message string) error {
 	return c.CmdLit(message, "APPEND \"%s\"", mb)
 }
 
-// CHECK
+// Check tells the server to perform any necessary housekeeping.
+func (c *Client) Check() error {
+	return c.Cmd(`CHECK`)
+}
 
 // CLOSE
 
