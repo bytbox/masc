@@ -312,7 +312,7 @@ func (c *Client) Expunge() error {
 	return c.Cmd(`EXPUNGE`)
 }
 
-// SEARCH
+// SEARCH remains unimplemented.
 
 // FETCH
 
