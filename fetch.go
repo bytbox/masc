@@ -25,5 +25,6 @@ func testFetch() {
 	runCmd(c.List("", "*"))
 
 	runCmd(c.Status("INBOX", "MESSAGES", "RECENT", "UIDNEXT"))
+
 	runCmd(c.Logout())
 }

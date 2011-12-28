@@ -28,8 +28,11 @@ type Client struct {
 
 	Box  *Mailbox
 
+	conn net.Conn // underlying raw connection.
 	tags map[string]chan string
 	tMut *sync.Mutex
+
+	lit  chan string // channel where the literal string to be dumped is stored
 }
 
 // Represents the current known state of the remote server.
@@ -78,8 +81,10 @@ func NewClient(conn net.Conn) (*Client, error) {
 			capabilities: []string{},
 			mut: new(sync.RWMutex),
 		},
+		conn: conn,
 		tags: map[string]chan string{},
 		tMut: new(sync.Mutex),
+		lit: make(chan string),
 	}
 
 	input := make(chan string)
@@ -103,7 +108,11 @@ func NewClient(conn net.Conn) (*Client, error) {
 		for {
 			select {
 			case l := <-input:
-				if isUntagged(l) {
+				if l[0] == '+' {
+					// server is ready for transmission of literal string
+					client.Text.PrintfLine(<-client.lit)
+					continue
+				} else if isUntagged(l) {
 					client.handleUntagged(l[2:])
 					continue
 				}
@@ -131,7 +140,9 @@ func (c *Client) handleUntagged(l string) {
 	c.Box.mut.Unlock()
 }
 
+// Sends a command and retreives the tagged response.
 func (c *Client) Cmd(format string, args ...interface{}) error {
+	c.tMut.Lock()
 	t := c.Text
 	id := t.Next()
 	tag := fmt.Sprintf("x%d", id)
@@ -146,7 +157,36 @@ func (c *Client) Cmd(format string, args ...interface{}) error {
 	defer t.EndResponse(id)
 
 	ch := make(chan string)
+	c.tags[tag] = ch
+	c.tMut.Unlock()
+
+	l := <-ch
+	if l[0:2] == "OK" {
+		return nil
+	}
+	return errors.New(l)
+}
+
+// Equivalent to Cmd, but the first argument (which will be rotated to be the
+// last) is sent as a literal string.
+func (c *Client) CmdLit(lit, format string, args ...interface{}) error {
 	c.tMut.Lock()
+	t := c.Text
+	id := t.Next()
+	tag := fmt.Sprintf("x%d", id)
+	t.StartRequest(id)
+	err := t.PrintfLine("%s %s {%d}", tag, fmt.Sprintf(format, args...), len(lit))
+	if err != nil {
+		return err
+	}
+	t.EndRequest(id)
+
+	c.lit <- lit
+
+	t.StartResponse(id)
+	defer t.EndResponse(id)
+
+	ch := make(chan string)
 	c.tags[tag] = ch
 	c.tMut.Unlock()
 
@@ -158,7 +198,7 @@ func (c *Client) Cmd(format string, args ...interface{}) error {
 }
 
 func isUntagged(l string) bool {
-	return l[0:2] == "* "
+	return l[0] != 'x' // all tags are x00
 }
 
 // Noop sends a NOOP command to the server, which may be abused to test that
@@ -249,7 +289,12 @@ func (c *Client) Status(mb string, ss ...string) error {
 	return c.Cmd(`STATUS "%s" %s`, mb, st)
 }
 
-// APPEND
+// Append appends a message to the specified mailbox, which must exist.
+//
+// TODO handle flags and the optional date/time string.
+func (c *Client) Append(mb, message string) error {
+	return c.CmdLit(message, "APPEND \"%s\"", mb)
+}
 
 // CHECK
 
