@@ -24,9 +24,10 @@ func main() {
 	}
 
 	cfgPath := path.Join(os.Getenv("HOME"), ".mascrc")
-	ReadConfig(cfgPath)
+	//ReadConfig(cfgPath)
 
+	testFetch()
 	//Compose()
-	UIMain()
+	//UIMain()
 	WriteConfig(cfgPath)
 }

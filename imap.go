@@ -111,6 +111,15 @@ func NewClient(conn net.Conn) (*Client, error) {
 		for {
 			select {
 			case l := <-input:
+				if len(l) == 0 {
+					// the channel is closed; theres nothing more
+					client.tMut.Lock()
+					for _, c := range client.tags {
+						close(c)
+					}
+					client.tMut.Unlock()
+					return
+				}
 				if l[0] == '+' {
 					// server is ready for transmission of literal string
 					client.Text.PrintfLine(<-client.lit)
@@ -125,6 +134,8 @@ func NewClient(conn net.Conn) (*Client, error) {
 				l = ps[1]
 				client.tMut.Lock()
 				client.tags[tag] <- l
+				close(client.tags[tag])
+				delete(client.tags, tag)
 				client.tMut.Unlock()
 			}
 		}

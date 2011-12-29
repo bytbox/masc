@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 )
 
@@ -10,7 +11,6 @@ func runCmd(err error) {
 	}
 }
 
-/*
 func testFetch() {
 	c, err := DialTLS("imap.gmail.com:993")
 	if err != nil {
@@ -31,4 +31,3 @@ func testFetch() {
 
 	runCmd(c.Logout())
 }
-*/
