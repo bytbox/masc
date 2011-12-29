@@ -6,13 +6,23 @@ import (
 )
 
 type Config struct {
+	Sends       map[string]*SMTPLogin
+	DefaultSend string
+
+	Sources     map[string]*Source
+}
+
+type Source struct {
 
 }
 
 var config *Config
 
 func NewConfig() *Config {
-	return new(Config)
+	return &Config{
+		Sends: map[string]*SMTPLogin{},
+		Sources: map[string]*Source{},
+	}
 }
 
 func ReadConfig(filename string) {

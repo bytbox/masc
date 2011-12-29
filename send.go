@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/smtp"
 )
@@ -10,7 +9,6 @@ import (
 type Outgoing struct {
 	From    string
 	To      []string
-	Subject string
 	Body    string
 }
 
@@ -28,7 +26,7 @@ func doSend(l *SMTPLogin, m *Outgoing) {
 		smtp.PlainAuth(ident, uname, pass, server),
 		m.From,
 		m.To,
-		[]byte(fmt.Sprintf("Subject: %s\n\n%s", m.Subject, m.Body)),
+		[]byte(m.Body),
 	)
 	if err != nil {
 		log.Fatal(err)

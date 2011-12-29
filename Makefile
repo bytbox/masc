@@ -1,7 +1,7 @@
 include ${GOROOT}/src/Make.inc
 
 TARG = masc
-UI = cmd.go
+UI = cmd.go notify.go
 GOFILES = masc.go imap.go send.go fetch.go config.go ${UI}
 
 include ${GOROOT}/src/Make.cmd

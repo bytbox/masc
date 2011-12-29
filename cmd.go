@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"strings"
 	"sync"
 )
 
@@ -61,6 +62,25 @@ func tokenize(line string) (toks []string) {
 	return
 }
 
+func getLine(prefix string, msg string) string {
+	lines := strings.Split(msg, "\n")
+	for _, line := range lines {
+		l := strings.TrimSpace(line)
+		if strings.Index(l, prefix) != -1 {
+			return strings.TrimSpace(l[len(prefix):])
+		}
+	}
+	return ""
+}
+
+func getFrom(msg string) string {
+	return getLine("From:", msg)
+}
+
+func getTo(msg string) []string {
+	return strings.Split(getLine("To:", msg), ",")
+}
+
 var actions map[string]func([]string)
 
 func init() {
@@ -91,6 +111,8 @@ func init() {
 			}
 			os.Remove(f.Name())
 
+			msg := string(c)
+
 			// confirm send
 			fmt.Print("Send (y/n)? ")
 			lb, _, err := input.ReadLine()
@@ -105,13 +127,21 @@ func init() {
 				fmt.Println("Aborting")
 				return
 			}
-			fmt.Println("Sending")
+			fmt.Println("Sending...")
 
 			// send
-			msg := string(c)
-			println(msg)
+			out := &Outgoing{getFrom(msg), getTo(msg), msg}
+			doSend(config.Sends[config.DefaultSend], out)
 		},
 		"m": alias("mail"),
+
+		"smtp": func(args []string) {
+			if len(args) != 5 {
+				panic("usage: smtp name server ident uname passwd")
+			}
+			login := &SMTPLogin{args[1], args[2], args[3], args[4]}
+			config.Sends[args[0]] = login
+		},
 	}
 }
 
