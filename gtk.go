@@ -60,6 +60,9 @@ func GUIMain() {
 	// message body
 	bScroll := gtk.ScrolledWindow(nil, nil)
 	bScroll.SetPolicy(gtk.GTK_POLICY_AUTOMATIC, gtk.GTK_POLICY_ALWAYS)
+	bodyView := gtk.TextView()
+	bodyView.SetEditable(false)
+	bScroll.Add(bodyView)
 	container.Add(bScroll)
 
 	outer.PackStart(toolbar, false, false, 0)
