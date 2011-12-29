@@ -4,7 +4,9 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
+	"os/exec"
 	"sync"
 )
 
@@ -69,8 +71,45 @@ func init() {
 		},
 		"h": alias("help"),
 		"?": alias("help"),
+
 		"mail": func(toks []string) {
-			panic("NOT YET IMPLEMENTED")
+			// create temporary file with this message
+			f, err := ioutil.TempFile("", "masc")
+			if err != nil {
+				panic(err)
+			}
+			b := bufio.NewWriter(f)
+			b.WriteString("Template message here")
+			f.Close()
+
+			runEditor(f.Name())
+
+			// read file and remove
+			c, err := ioutil.ReadFile(f.Name())
+			if err != nil {
+				panic(err)
+			}
+			os.Remove(f.Name())
+
+			// confirm send
+			fmt.Print("Send (y/n)? ")
+			lb, _, err := input.ReadLine()
+			l := string(lb)
+			for l != "y" && l != "n" && err == nil {
+				fmt.Print("Send (y/n)? ")
+				lb, _, err = input.ReadLine()
+				l = string(lb)
+			}
+			if err != nil { panic(err) }
+			if l == "n" {
+				fmt.Println("Aborting")
+				return
+			}
+			fmt.Println("Sending")
+
+			// send
+			msg := string(c)
+			println(msg)
 		},
 		"m": alias("mail"),
 	}
@@ -78,6 +117,23 @@ func init() {
 
 func alias(cmd string) func([]string) {
 	return actions[cmd]
+}
+
+func runEditor(filename string) {
+	editor := os.Getenv("EDITOR")
+	if editor == "" {
+		editor = "nano"
+	}
+
+	path, err := exec.LookPath(editor)
+	if err != nil { panic(err) }
+
+	cmd := exec.Command(path, filename)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil { panic(err) }
 }
 
 func UIMain() {
