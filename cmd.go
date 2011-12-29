@@ -19,7 +19,43 @@ func prompt() (string, error) {
 	return string(line), err
 }
 
+func isWhite(r rune) bool {
+	return r == ' ' || r == '\t'
+}
+
+func isQuot(r rune) bool { return r == '"' }
+
 func tokenize(line string) (toks []string) {
+	// states
+	const (
+		READY = iota
+		INTOK
+		INQUOT
+	)
+
+	var tmp string
+	state := READY
+	for _, c := range line {
+		switch state {
+		case READY:
+			if isWhite(c) { continue }
+			tmp = string(c)
+			state = INTOK
+		case INTOK:
+			if isWhite(c) {
+				toks = append(toks, tmp)
+				state = READY
+				continue
+			}
+			tmp += string(c)
+		case INQUOT:
+		default:
+			panic("Invalid state")
+		}
+	}
+	if len(tmp) > 0 {
+		toks = append(toks, tmp)
+	}
 	return
 }
 
@@ -29,14 +65,19 @@ func UIMain() {
 	for err == nil {
 		// tokenize the line
 		toks := tokenize(line)
-		switch toks {
+		if len(toks) == 0 { goto nothing }
+		switch toks[0] {
+		case "exit":
+			goto exit
 		default:
 			fmt.Println("?")
 		}
+nothing:
 		line, err = prompt()
 	}
 	if err != nil && err != io.EOF {
 		panic(err)
 	}
+exit:
 	fmt.Println("Bye!")
 }
