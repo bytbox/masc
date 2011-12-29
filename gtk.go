@@ -37,7 +37,7 @@ func Compose() {
 }
 
 func GUIMain() {
-	gtk.Main()
+	//gtk.Main()
 }
 
 /*

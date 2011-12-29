@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
+	"path"
 
 	//"github.com/bytbox/kakapo/lisp"
 )
@@ -21,9 +23,10 @@ func main() {
 		return
 	}
 
-	// attempt to fetch all mail
-	testFetch()
+	cfgPath := path.Join(os.Getenv("HOME"), ".mascrc")
+	ReadConfig(cfgPath)
 
 	//Compose()
-	//GUIMain()
+	GUIMain()
+	WriteConfig(cfgPath)
 }
