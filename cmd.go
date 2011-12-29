@@ -63,6 +63,12 @@ var actions map[string]func([]string)
 
 func init() {
 	actions = map[string]func([]string){
+		"help": func(toks []string) {
+			fmt.Println(`Commands:
+`)
+		},
+		"h": alias("help"),
+		"?": alias("help"),
 		"mail": func(toks []string) {
 			panic("NOT YET IMPLEMENTED")
 		},
