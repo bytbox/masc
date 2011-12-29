@@ -36,7 +36,7 @@ func Compose() {
 	window.ShowAll()
 }
 
-func GUIMain() {
+func UIMain() {
 	window := gtk.Window(gtk.GTK_WINDOW_TOPLEVEL)
 	window.SetPosition(gtk.GTK_WIN_POS_CENTER)
 	window.SetTitle("Masc")

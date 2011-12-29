@@ -27,6 +27,6 @@ func main() {
 	ReadConfig(cfgPath)
 
 	//Compose()
-	GUIMain()
+	UIMain()
 	WriteConfig(cfgPath)
 }
