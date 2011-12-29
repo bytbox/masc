@@ -59,6 +59,21 @@ func tokenize(line string) (toks []string) {
 	return
 }
 
+var actions map[string]func([]string)
+
+func init() {
+	actions = map[string]func([]string){
+		"mail": func(toks []string) {
+			panic("NOT YET IMPLEMENTED")
+		},
+		"m": alias("mail"),
+	}
+}
+
+func alias(cmd string) func([]string) {
+	return actions[cmd]
+}
+
 func UIMain() {
 	// Prompt loop
 	line, err := prompt()
@@ -66,11 +81,22 @@ func UIMain() {
 		// tokenize the line
 		toks := tokenize(line)
 		if len(toks) == 0 { goto nothing }
-		switch toks[0] {
-		case "exit":
-			goto exit
-		default:
-			fmt.Println("?")
+		if toks[0] == "exit" { goto exit }
+		{
+			action, ok := actions[toks[0]]
+			if !ok {
+				fmt.Println("?")
+				goto nothing
+			}
+			func () {
+				defer func() {
+					err := recover()
+					if err != nil {
+						fmt.Printf("error: %s\n", err)
+					}
+				}()
+				action(toks[1:])
+			}()
 		}
 nothing:
 		line, err = prompt()
