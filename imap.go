@@ -175,7 +175,7 @@ func (c *Client) Cmd(format string, args ...interface{}) error {
 	c.tMut.Unlock()
 
 	l := <-ch
-	if l[0:2] == "OK" {
+	if l == "" || l[0:2] == "OK" {
 		return nil
 	}
 	return errors.New(l)
@@ -229,7 +229,9 @@ func (c *Client) Login(username, password string) error {
 
 // Logout closes the connection, after instructing the server to do the same.
 func (c *Client) Logout() error {
-	return c.Cmd("LOGOUT")
+	c.Cmd("LOGOUT")
+	c.Close()
+	return nil
 }
 
 // Select selects the specified IMAP mailbox, updating its information in the
