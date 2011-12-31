@@ -11,12 +11,12 @@
 package main
 
 import (
+	"bufio"
 	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
 	"net"
-	tp "net/textproto"
 	"strings"
 	"sync"
 )
@@ -24,14 +24,11 @@ import (
 // The IMAP client. All methods on the client are thread-safe and executed
 // synchronously.
 type Client struct {
-	// The underlying textproto connection may be used to extend the
-	// functionality of this package; however, using Client.Cmd instead is
-	// recommended, as doing so better preserves thread-safety.
-	Text *tp.Conn
-
 	Box  *Mailbox
 
 	conn net.Conn // underlying raw connection.
+	bIn  *bufio.Reader
+	bOut *bufio.Writer
 	tags map[string]chan string
 	tMut *sync.Mutex
 
@@ -77,14 +74,16 @@ func DialTLS(addr string) (*Client, error) {
 
 // NewClient returns a new Client using an existing connection.
 func NewClient(conn net.Conn) (*Client, error) {
-	text := tp.NewConn(conn)
+	bOut := bufio.NewWriter(conn)
+	bIn := bufio.NewReader(conn)
 	client := &Client{
-		Text: text,
 		Box:  &Mailbox{
 			capabilities: []string{},
 			mut: new(sync.RWMutex),
 		},
 		conn: conn,
+		bIn: bIn,
+		bOut: bOut,
 		tags: map[string]chan string{},
 		tMut: new(sync.Mutex),
 		lit: make(chan string),
@@ -94,10 +93,10 @@ func NewClient(conn net.Conn) (*Client, error) {
 
 	// Read all input from conn
 	go func() {
-		l, err := text.ReadLine()
+		l, _, err := bIn.ReadLine()
 		for err == nil {
-			input <- l
-			l, err = text.ReadLine()
+			input <- string(l)
+			l, _, err = bIn.ReadLine()
 		}
 		if err == io.EOF {
 			close(input)
@@ -122,7 +121,7 @@ func NewClient(conn net.Conn) (*Client, error) {
 				}
 				if l[0] == '+' {
 					// server is ready for transmission of literal string
-					client.Text.PrintfLine(<-client.lit)
+					fmt.Printf("%s\n", <-client.lit)
 					continue
 				} else if isUntagged(l) {
 					client.handleUntagged(l[2:])
@@ -154,21 +153,22 @@ func (c *Client) handleUntagged(l string) {
 	c.Box.mut.Unlock()
 }
 
+var last_id = 0
+
+func (c *Client) Next() int {
+	last_id = last_id + 1
+	return last_id
+}
+
 // Sends a command and retreives the tagged response.
 func (c *Client) Cmd(format string, args ...interface{}) error {
 	c.tMut.Lock()
-	t := c.Text
-	id := t.Next()
+	id := c.Next()
 	tag := fmt.Sprintf("x%d", id)
-	t.StartRequest(id)
-	err := t.PrintfLine("%s %s", tag, fmt.Sprintf(format, args...))
-	if err != nil {
-		return err
-	}
-	t.EndRequest(id)
-
-	t.StartResponse(id)
-	defer t.EndResponse(id)
+	_, err := fmt.Fprintf(c.bOut, "%s %s\r\n", tag, fmt.Sprintf(format, args...))
+	if err != nil { return err }
+	err = c.bOut.Flush()
+	if err != nil { return err }
 
 	ch := make(chan string)
 	c.tags[tag] = ch
@@ -185,20 +185,14 @@ func (c *Client) Cmd(format string, args ...interface{}) error {
 // last) is sent as a literal string.
 func (c *Client) CmdLit(lit, format string, args ...interface{}) error {
 	c.tMut.Lock()
-	t := c.Text
-	id := t.Next()
+	id := c.Next()
 	tag := fmt.Sprintf("x%d", id)
-	t.StartRequest(id)
-	err := t.PrintfLine("%s %s {%d}", tag, fmt.Sprintf(format, args...), len(lit))
+	_, err := fmt.Fprintf(c.bOut, "%s %s {%d}", tag, fmt.Sprintf(format, args...), len(lit))
 	if err != nil {
 		return err
 	}
-	t.EndRequest(id)
 
 	c.lit <- lit
-
-	t.StartResponse(id)
-	defer t.EndResponse(id)
 
 	ch := make(chan string)
 	c.tags[tag] = ch
