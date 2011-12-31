@@ -276,8 +276,8 @@ func (c *Client) Unsubscribe(mb string) error {
 	return c.Cmd(`UNSUBSCRIBE "%s"`, mb)
 }
 
-// List lists all folder within basename that match the wildcard expression mb.
-// The result is put into the Client's Mailbox struct.
+// List lists all folders within basename that match the wildcard expression
+// mb.  The result is put into the Client's Mailbox struct.
 func (c *Client) List(basename, mb string) error {
 	return c.Cmd(`LIST "%s" "%s"`, basename, mb)
 }
