@@ -46,7 +46,7 @@ func NewClient(conn net.Conn) (*Client, error) {
 		conn: conn,
 	}
 	// send dud command, to read a line
-	_, err := client.cmd("")
+	_, err := client.Cmd("")
 	if err != nil { return nil, err }
 	return client, nil
 }
@@ -55,7 +55,7 @@ func NewClient(conn net.Conn) (*Client, error) {
 // output. The terminating CRLF must be included in the format string.
 //
 // Output sent after the first line must be retrieved via readLines.
-func (c *Client) cmd(format string, args ...interface{}) (string, error) {
+func (c *Client) Cmd(format string, args ...interface{}) (string, error) {
 	fmt.Fprintf(c.conn, format, args...)
 	line, _, err := c.bin.ReadLine()
 	l := string(line)
@@ -65,7 +65,7 @@ func (c *Client) cmd(format string, args ...interface{}) (string, error) {
 	return l[4:], err
 }
 
-func (c *Client) readLines() (lines []string, err error) {
+func (c *Client) ReadLines() (lines []string, err error) {
 	lines = make([]string, 0)
 	l, _, err := c.bin.ReadLine()
 	line := string(l)
@@ -83,7 +83,7 @@ func (c *Client) readLines() (lines []string, err error) {
 // User sends the given username to the server. Generally, there is no reason
 // not to use the Auth convenience method.
 func (c *Client) User(username string) (err error) {
-	_, err = c.cmd("USER %s\r\n", username)
+	_, err = c.Cmd("USER %s\r\n", username)
 	return
 }
 
@@ -92,7 +92,7 @@ func (c *Client) User(username string) (err error) {
 // some other mechanism). Generally, there is no reason not to use the Auth
 // convenience method.
 func (c *Client) Pass(password string) (err error) {
-	_, err = c.cmd("PASS %s\r\n", password)
+	_, err = c.Cmd("PASS %s\r\n", password)
 	return
 }
 
@@ -111,7 +111,7 @@ func (c *Client) Auth(username, password string) (err error) {
 // maildrop is ignored. In the event of an error, all returned numeric values
 // will be 0.
 func (c *Client) Stat() (count, size int, err error) {
-	l, err := c.cmd("STAT\r\n")
+	l, err := c.Cmd("STAT\r\n")
 	if err != nil { return 0, 0, err }
 	parts := strings.Fields(l)
 	count, err = strconv.Atoi(parts[0])
@@ -125,7 +125,7 @@ func (c *Client) Stat() (count, size int, err error) {
 // does not exist, or another error is encountered, the returned size will be
 // 0.
 func (c *Client) List(msg int) (size int, err error) {
-	l, err := c.cmd("LIST %d\r\n", msg)
+	l, err := c.Cmd("LIST %d\r\n", msg)
 	if err != nil { return 0, err }
 	size, err = strconv.Atoi(strings.Fields(l)[1])
 	if err != nil { return 0, errors.New("Invalid server response") }
@@ -134,9 +134,9 @@ func (c *Client) List(msg int) (size int, err error) {
 
 // ListAll returns a list of all messages and their sizes.
 func (c *Client) ListAll() (msgs []int, sizes []int, err error) {
-	_, err = c.cmd("LIST\r\n")
+	_, err = c.Cmd("LIST\r\n")
 	if err != nil { return }
-	lines, err := c.readLines()
+	lines, err := c.ReadLines()
 	if err != nil { return }
 	msgs = make([]int, len(lines), len(lines))
 	sizes = make([]int, len(lines), len(lines))
@@ -156,35 +156,35 @@ func (c *Client) ListAll() (msgs []int, sizes []int, err error) {
 // Retr downloads and returns the given message. The lines are separated by LF,
 // whatever the server sent.
 func (c *Client) Retr(msg int) (text string, err error) {
-	_, err = c.cmd("RETR %d\r\n", msg)
+	_, err = c.Cmd("RETR %d\r\n", msg)
 	if err != nil { return "", err }
-	lines, err := c.readLines()
+	lines, err := c.ReadLines()
 	text = strings.Join(lines, "\n")
 	return
 }
 
 // Dele marks the given message as deleted.
 func (c *Client) Dele(msg int) (err error) {
-	_, err = c.cmd("DELE %d\r\n", msg)
+	_, err = c.Cmd("DELE %d\r\n", msg)
 	return
 }
 
 // Noop does nothing, but will prolong the end of the connection if the server
 // has a timeout set.
 func (c *Client) Noop() (err error) {
-	_, err = c.cmd("NOOP\r\n")
+	_, err = c.Cmd("NOOP\r\n")
 	return
 }
 
 // Rset unmarks any messages marked for deletion previously in this session.
 func (c *Client) Rset() (err error) {
-	_, err = c.cmd("RSET\r\n")
+	_, err = c.Cmd("RSET\r\n")
 	return
 }
 
 // Quit sends the QUIT message to the POP3 server and closes the connection.
 func (c *Client) Quit() error {
-	_, err := c.cmd("QUIT\r\n")
+	_, err := c.Cmd("QUIT\r\n")
 	if err != nil { return err }
 	c.conn.Close()
 	return nil
