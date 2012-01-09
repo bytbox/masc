@@ -11,8 +11,7 @@ func testFetch() {
 	if err != nil { panic(err) }
 	err = client.Auth(uname, passwd)
 	if err != nil { panic(err) }
-	size, err := client.List(5)
+	_, _, err = client.ListAll()
 	if err != nil { panic(err) }
-	println(size)
 	client.Quit()
 }

@@ -53,6 +53,8 @@ func NewClient(conn net.Conn) (*Client, error) {
 
 // Convenience function to synchronously run an arbitrary command and wait for
 // output. The terminating CRLF must be included in the format string.
+//
+// Output sent after the first line must be retrieved via readLines.
 func (c *Client) cmd(format string, args ...interface{}) (string, error) {
 	fmt.Fprintf(c.conn, format, args...)
 	line, _, err := c.bin.ReadLine()
@@ -61,6 +63,21 @@ func (c *Client) cmd(format string, args ...interface{}) (string, error) {
 		err = errors.New(l[5:])
 	}
 	return l[4:], err
+}
+
+func (c *Client) readLines() (lines []string, err error) {
+	lines = make([]string, 0)
+	l, _, err := c.bin.ReadLine()
+	line := string(l)
+	for err == nil && line != "." {
+		if line[0] == '.' {
+			line = line[1:]
+		}
+		lines = append(lines, line)
+		l, _, err = c.bin.ReadLine()
+		line = string(l)
+	}
+	return
 }
 
 // User sends the given username to the server. Generally, there is no reason
@@ -123,6 +140,16 @@ func (c *Client) List(msg int) (size int, err error) {
 	size, err = strconv.Atoi(strings.Fields(l)[1])
 	if err != nil { return 0, errors.New("Invalid server response") }
 	return size, nil
+}
+
+// ListAll returns a list of all messages and their sizes.
+func (c *Client) ListAll() (msgs []int, sizes []int, err error) {
+	_, err = c.cmd("LIST\r\n")
+	if err != nil { return }
+	lines, err := c.readLines()
+	if err != nil { return }
+	for _, l := range lines { println(l) }
+	return
 }
 
 // Quit sends the QUIT message to the POP3 server and closes the connection.
