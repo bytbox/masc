@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/mattn/go-gtk/gtk"
+	"gobject/gtk-3.0"
 )
 
 func init() {
@@ -10,23 +10,23 @@ func init() {
 
 // Open the composition window.
 func Compose() {
-	window := gtk.Window(gtk.GTK_WINDOW_TOPLEVEL)
-	window.SetPosition(gtk.GTK_WIN_POS_CENTER)
+	window := gtk.NewWindow(gtk.WindowTypeToplevel)
+	window.SetPosition(gtk.WindowPositionCenter)
 	window.SetTitle("Compose Message")
 
-	container := gtk.VBox(false, 5)
+	container := gtk.NewVBox(false, 5)
 
 	// toolbar
-	toolbar := gtk.HBox(false, 1)
-	sendButton := gtk.ButtonWithLabel("Send")
+	toolbar := gtk.NewHBox(false, 1)
+	sendButton := gtk.NewButtonWithLabel("Send")
 	toolbar.PackStart(sendButton, false, false, 0)
 	//container.Add(toolbar)
 	container.PackStart(toolbar, false, false, 0)
 
 	// message content
-	swin := gtk.ScrolledWindow(nil, nil)
-	swin.SetPolicy(gtk.GTK_POLICY_AUTOMATIC, gtk.GTK_POLICY_ALWAYS)
-	contentField := gtk.TextView()
+	swin := gtk.NewScrolledWindow(nil, nil)
+	swin.SetPolicy(gtk.PolicyTypeAutomatic, gtk.PolicyTypeAlways)
+	contentField := gtk.NewTextView()
 	swin.Add(contentField)
 	container.Add(swin)
 
@@ -37,30 +37,30 @@ func Compose() {
 }
 
 func UIMain() {
-	window := gtk.Window(gtk.GTK_WINDOW_TOPLEVEL)
-	window.SetPosition(gtk.GTK_WIN_POS_CENTER)
+	window := gtk.NewWindow(gtk.WindowTypeToplevel)
+	window.SetPosition(gtk.WindowPositionCenter)
 	window.SetTitle("Masc")
 
 	window.Connect("destroy", func(ctx interface{}) {
 		gtk.MainQuit()
-	}, nil)
+	})
 
-	outer := gtk.VBox(false, 4)
+	outer := gtk.NewVBox(false, 4)
 
 	// toolbar
-	toolbar := gtk.HBox(false, 1)
+	toolbar := gtk.NewHBox(false, 1)
 
-	container := gtk.HBox(true, 4)
+	container := gtk.NewHBox(true, 4)
 
 	// message list
-	lScroll := gtk.ScrolledWindow(nil, nil)
-	lScroll.SetPolicy(gtk.GTK_POLICY_AUTOMATIC, gtk.GTK_POLICY_ALWAYS)
+	lScroll := gtk.NewScrolledWindow(nil, nil)
+	lScroll.SetPolicy(gtk.PolicyTypeAutomatic, gtk.PolicyTypeAlways)
 	container.Add(lScroll)
 
 	// message body
-	bScroll := gtk.ScrolledWindow(nil, nil)
-	bScroll.SetPolicy(gtk.GTK_POLICY_AUTOMATIC, gtk.GTK_POLICY_ALWAYS)
-	bodyView := gtk.TextView()
+	bScroll := gtk.NewScrolledWindow(nil, nil)
+	bScroll.SetPolicy(gtk.PolicyTypeAutomatic, gtk.PolicyTypeAlways)
+	bodyView := gtk.NewTextView()
 	bodyView.SetEditable(false)
 	bScroll.Add(bodyView)
 	container.Add(bScroll)
