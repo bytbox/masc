@@ -1,6 +1,5 @@
-// Package pop3 provides a partial implementation of the Post Office Protocol,
-// Version 3 as defined in RFC 1939. Selected client-sent messages are not
-// implemented: APOP.
+// Package pop3 provides an implementation of the Post Office Protocol, Version
+// 3 as defined in RFC 1939.
 
 package main
 
@@ -84,6 +83,13 @@ func (c *Client) Auth(username, password string) (err error) {
 	err = c.User(username)
 	if err != nil { return }
 	err = c.Pass(password)
+	return
+}
+
+// Apop sends the given username and password hash (MD5 digest) to the server.
+// This method does not offer any more real security over Auth.
+func (c *Client) Apop(username, digest string) (err error) {
+	_, err = c.cmd("APOP %s %s\n", username, digest)
 	return
 }
 
