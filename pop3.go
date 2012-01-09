@@ -9,6 +9,8 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"strconv"
+	"strings"
 )
 
 // The POP3 client.
@@ -58,7 +60,7 @@ func (c *Client) cmd(format string, args ...interface{}) (string, error) {
 	if l[0:3] != "+OK" {
 		err = errors.New(l[5:])
 	}
-	return l, err
+	return l[4:], err
 }
 
 // User sends the given username to the server. Generally, there is no reason
@@ -96,10 +98,17 @@ func (c *Client) Apop(username, digest string) (err error) {
 	return
 }
 
-// Stat retrieves a drop listing for the current maildrop.
-func (c *Client) Stat() (err error) {
+// Stat retrieves a drop listing for the current maildrop. Information provided
+// besides the number of messages and the size of the maildrop is ignored. In
+// the event of an error, all returned values will be 0.
+func (c *Client) Stat() (count, size int, err error) {
 	l, err := c.cmd("STAT\r\n")
-	println(l)
+	if err != nil { return 0, 0, err }
+	parts := strings.Fields(l)
+	count, err = strconv.Atoi(parts[0])
+	if err != nil { return 0, 0, errors.New("Invalid server response") }
+	size, err = strconv.Atoi(parts[1])
+	if err != nil { return 0, 0, errors.New("Invalid server response") }
 	return
 }
 
