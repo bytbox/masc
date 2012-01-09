@@ -98,20 +98,10 @@ func (c *Client) Pass(password string) (err error) {
 
 // Auth sends the given username and password to the server, calling the User
 // and Pass methods as appropriate.
-//
-// Technically speaking, the server may opt not to support either
-// authentication mechanism; however, in practice, all implement both.
 func (c *Client) Auth(username, password string) (err error) {
 	err = c.User(username)
 	if err != nil { return }
 	err = c.Pass(password)
-	return
-}
-
-// Apop sends the given username and password hash (MD5 digest) to the server.
-// This method does not offer any more real security over Auth.
-func (c *Client) Apop(username, digest string) (err error) {
-	_, err = c.cmd("APOP %s %s\r\n", username, digest)
 	return
 }
 
