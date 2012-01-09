@@ -70,7 +70,7 @@ func (c *Client) readLines() (lines []string, err error) {
 	l, _, err := c.bin.ReadLine()
 	line := string(l)
 	for err == nil && line != "." {
-		if line[0] == '.' {
+		if len(line) > 0 && line[0] == '.' {
 			line = line[1:]
 		}
 		lines = append(lines, line)
@@ -160,6 +160,16 @@ func (c *Client) ListAll() (msgs []int, sizes []int, err error) {
 		msgs[i] = m
 		sizes[i] = s
 	}
+	return
+}
+
+// Retr downloads and returns the given message. The lines are separated by LF,
+// whatever the server sent.
+func (c *Client) Retr(msg int) (text string, err error) {
+	_, err = c.cmd("RETR %d\r\n", msg)
+	if err != nil { return "", err }
+	lines, err := c.readLines()
+	text = strings.Join(lines, "\n")
 	return
 }
 
