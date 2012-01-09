@@ -1,5 +1,6 @@
-// Package pop3 implements the Post Office Protocol, Version 3 as defined in
-// RFC 1939.
+// Package pop3 provides a partial implementation of the Post Office Protocol,
+// Version 3 as defined in RFC 1939. Selected client-sent messages are not
+// implemented: APOP.
 
 package main
 
