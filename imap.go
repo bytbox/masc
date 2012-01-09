@@ -62,7 +62,7 @@ func Dial(addr string) (*Client, error) {
 	return NewClient(conn)
 }
 
-// DialTLS creates a TLS_secured connection to the IMAP server at the given
+// DialTLS creates a TLS-secured connection to the IMAP server at the given
 // address and returns the corresponding Client.
 func DialTLS(addr string) (*Client, error) {
 	conn, err := tls.Dial("tcp", addr, nil)
