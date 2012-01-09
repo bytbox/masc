@@ -148,7 +148,18 @@ func (c *Client) ListAll() (msgs []int, sizes []int, err error) {
 	if err != nil { return }
 	lines, err := c.readLines()
 	if err != nil { return }
-	for _, l := range lines { println(l) }
+	msgs = make([]int, len(lines), len(lines))
+	sizes = make([]int, len(lines), len(lines))
+	for i, l := range lines {
+		var m, s int
+		fs := strings.Fields(l)
+		m, err = strconv.Atoi(fs[0])
+		if err != nil { return }
+		s, err = strconv.Atoi(fs[1])
+		if err != nil { return }
+		msgs[i] = m
+		sizes[i] = s
+	}
 	return
 }
 
