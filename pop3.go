@@ -51,7 +51,7 @@ func NewClient(conn net.Conn) (*Client, error) {
 }
 
 // Convenience function to synchronously run an arbitrary command and wait for
-// output.
+// output. The terminating CRLF must be included in the format string.
 func (c *Client) cmd(format string, args ...interface{}) (string, error) {
 	fmt.Fprintf(c.conn, format, args...)
 	line, _, err := c.bin.ReadLine()
@@ -65,7 +65,7 @@ func (c *Client) cmd(format string, args ...interface{}) (string, error) {
 // User sends the given username to the server. Generally, there is no reason
 // not to use the Auth convenience method.
 func (c *Client) User(username string) (err error) {
-	_, err = c.cmd("USER %s\n", username)
+	_, err = c.cmd("USER %s\r\n", username)
 	return
 }
 
@@ -74,7 +74,7 @@ func (c *Client) User(username string) (err error) {
 // some other mechanism). Generally, there is no reason not to use the Auth
 // convenience method.
 func (c *Client) Pass(password string) (err error) {
-	_, err = c.cmd("PASS %s\n", password)
+	_, err = c.cmd("PASS %s\r\n", password)
 	return
 }
 
@@ -89,7 +89,7 @@ func (c *Client) Auth(username, password string) (err error) {
 
 // Quit sends the QUIT message to the POP3 server and closes the connection.
 func (c *Client) Quit() error {
-	_, err := c.cmd("QUIT\n")
+	_, err := c.cmd("QUIT\r\n")
 	if err != nil { return err }
 	c.conn.Close()
 	return nil
