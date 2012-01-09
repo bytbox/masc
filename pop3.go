@@ -1,5 +1,7 @@
 // Package pop3 provides an implementation of the Post Office Protocol, Version
-// 3 as defined in RFC 1939.
+// 3 as defined in RFC 1939. Commands specified as optional are not
+// implemented; however, this implementation may be trivially extended to
+// support them.
 
 package main
 
