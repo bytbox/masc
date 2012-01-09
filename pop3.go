@@ -61,6 +61,31 @@ func (c *Client) cmd(format string, args ...interface{}) (string, error) {
 	return l, err
 }
 
+// User sends the given username to the server. Generally, there is no reason
+// not to use the Auth convenience method.
+func (c *Client) User(username string) (err error) {
+	_, err = c.cmd("USER %s\n", username)
+	return
+}
+
+// Pass sends the given password to the server. The password is sent
+// unencrypted unless the connection is already secured by TLS (via DialTLS or
+// some other mechanism). Generally, there is no reason not to use the Auth
+// convenience method.
+func (c *Client) Pass(password string) (err error) {
+	_, err = c.cmd("PASS %s\n", password)
+	return
+}
+
+// Auth sends the given username and password to the server, calling the User
+// and Pass methods as appropriate.
+func (c *Client) Auth(username, password string) (err error) {
+	err = c.User(username)
+	if err != nil { return }
+	err = c.Pass(password)
+	return
+}
+
 // Quit sends the QUIT message to the POP3 server and closes the connection.
 func (c *Client) Quit() error {
 	_, err := c.cmd("QUIT\n")
