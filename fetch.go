@@ -1,33 +1,7 @@
 package main
 
 import (
-	"flag"
-	"log"
 )
 
-func runCmd(err error) {
-	if err != nil {
-		log.Print(err.Error())
-	}
-}
-
 func testFetch() {
-	c, err := DialTLS("imap.gmail.com:993")
-	if err != nil {
-		log.Print(err.Error())
-	}
-
-	runCmd(c.Noop())
-	runCmd(c.Capability())
-	runCmd(c.Login(flag.Args()[0], flag.Args()[1]))
-	runCmd(c.Capability())
-
-	runCmd(c.List("", "*"))
-
-	runCmd(c.Status("INBOX", "MESSAGES", "RECENT", "UIDNEXT"))
-
-	runCmd(c.Select("INBOX"))
-	runCmd(c.Close())
-
-	runCmd(c.Logout())
 }
