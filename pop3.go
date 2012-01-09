@@ -98,9 +98,11 @@ func (c *Client) Apop(username, digest string) (err error) {
 	return
 }
 
-// Stat retrieves a drop listing for the current maildrop. Information provided
-// besides the number of messages and the size of the maildrop is ignored. In
-// the event of an error, all returned values will be 0.
+// Stat retrieves a drop listing for the current maildrop, consisting of the
+// number of messages and the total size (in octets) of the maildrop.
+// Information provided besides the number of messages and the size of the
+// maildrop is ignored. In the event of an error, all returned numeric values
+// will be 0.
 func (c *Client) Stat() (count, size int, err error) {
 	l, err := c.cmd("STAT\r\n")
 	if err != nil { return 0, 0, err }
@@ -110,6 +112,17 @@ func (c *Client) Stat() (count, size int, err error) {
 	size, err = strconv.Atoi(parts[1])
 	if err != nil { return 0, 0, errors.New("Invalid server response") }
 	return
+}
+
+// List returns the size of the given message, if it exists. If the message
+// does not exist, or another error is encountered, the returned size will be
+// 0.
+func (c *Client) List(msg int) (size int, err error) {
+	l, err := c.cmd("LIST %d\r\n", msg)
+	if err != nil { return 0, err }
+	size, err = strconv.Atoi(strings.Fields(l)[1])
+	if err != nil { return 0, errors.New("Invalid server response") }
+	return size, nil
 }
 
 // Quit sends the QUIT message to the POP3 server and closes the connection.
