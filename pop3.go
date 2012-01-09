@@ -163,6 +163,25 @@ func (c *Client) ListAll() (msgs []int, sizes []int, err error) {
 	return
 }
 
+// Dele marks the given message as deleted.
+func (c *Client) Dele(msg int) (err error) {
+	_, err = c.cmd("DELE %d\r\n", msg)
+	return
+}
+
+// Noop does nothing, but will prolong the end of the connection if the server
+// has a timeout set.
+func (c *Client) Noop() (err error) {
+	_, err = c.cmd("NOOP\r\n")
+	return
+}
+
+// Rset unmarks any messages marked for deletion previously in this session.
+func (c *Client) Rset() (err error) {
+	_, err = c.cmd("RSET\r\n")
+	return
+}
+
 // Quit sends the QUIT message to the POP3 server and closes the connection.
 func (c *Client) Quit() error {
 	_, err := c.cmd("QUIT\r\n")
