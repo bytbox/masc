@@ -6,6 +6,7 @@ package main
 import (
 	"bufio"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"net"
 )
@@ -54,14 +55,16 @@ func (c *Client) cmd(format string, args ...interface{}) (string, error) {
 	fmt.Fprintf(c.conn, format, args...)
 	line, _, err := c.bin.ReadLine()
 	l := string(line)
+	if l[0:3] != "+OK" {
+		err = errors.New(l[5:])
+	}
 	return l, err
 }
 
 // Quit sends the QUIT message to the POP3 server and closes the connection.
 func (c *Client) Quit() error {
-	r, err := c.cmd("QUIT\n")
+	_, err := c.cmd("QUIT\n")
 	if err != nil { return err }
-	println(r)
 	c.conn.Close()
 	return nil
 }
