@@ -99,7 +99,8 @@ func init() {
 				panic(err)
 			}
 			b := bufio.NewWriter(f)
-			b.WriteString("Template message here")
+			b.WriteString("From:\nTo:\nSubject:\n\n")
+			b.Flush()
 			f.Close()
 
 			runEditor(f.Name())
