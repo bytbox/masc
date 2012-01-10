@@ -90,10 +90,19 @@ func init() {
 	help	display this screen
 	mail	send mail
 	smtp	create an smtp account
+	pop3	create a pop3 account
+	imap	create an imap account
 `)
 		},
 		"h": alias("help"),
 		"?": alias("help"),
+
+		"pop3": func(toks []string) {
+
+		},
+		"imap": func(toks []string) {
+			panic("Not yet implemented")
+		},
 
 		"mail": func(toks []string) {
 			// create temporary file with this message
