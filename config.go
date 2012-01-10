@@ -7,7 +7,6 @@ import (
 
 type Config struct {
 	Sends       map[string]*SMTPLogin
-	DefaultSend string
 
 	Sources     map[string]*Source
 }

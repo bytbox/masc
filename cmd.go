@@ -131,7 +131,7 @@ func init() {
 
 			// send
 			out := &Outgoing{getFrom(msg), getTo(msg), msg}
-			doSend(config.Sends[config.DefaultSend], out)
+			doSend(config.Sends[getFrom(msg)], out)
 		},
 		"m": alias("mail"),
 
