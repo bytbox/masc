@@ -100,8 +100,21 @@ func init() {
 		"pop3": func(toks []string) {
 
 		},
+
 		"imap": func(toks []string) {
 			panic("Not yet implemented")
+		},
+
+		"spool": func(toks []string) {
+			panic("Not yet implemented")
+		},
+
+		"smtp": func(args []string) {
+			if len(args) != 5 {
+				panic("usage: smtp name server ident uname passwd")
+			}
+			login := &SMTPLogin{args[1], args[2], args[3], args[4]}
+			config.Sends[args[0]] = login
 		},
 
 		"mail": func(toks []string) {
@@ -147,14 +160,6 @@ func init() {
 			doSend(config.Sends[getFrom(msg)], out)
 		},
 		"m": alias("mail"),
-
-		"smtp": func(args []string) {
-			if len(args) != 5 {
-				panic("usage: smtp name server ident uname passwd")
-			}
-			login := &SMTPLogin{args[1], args[2], args[3], args[4]}
-			config.Sends[args[0]] = login
-		},
 	}
 }
 
