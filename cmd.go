@@ -87,6 +87,9 @@ func init() {
 	actions = map[string]func([]string){
 		"help": func(toks []string) {
 			fmt.Println(`Commands:
+	help	display this screen
+	mail	send mail
+	smtp	create an smtp account
 `)
 		},
 		"h": alias("help"),
