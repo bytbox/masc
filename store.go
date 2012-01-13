@@ -12,13 +12,18 @@ const (
 	DBFNAME = `masc.db`
 )
 
+type Message struct {
+	To []string
+	From string
+}
+
 // Interface for accessing, searching, and adding messages.
 type Store struct {
 	db *sql.DB
 }
 
 func NewStore(dirname string) *Store {
-	err := os.Mkdir(dirname, 0700)
+	err := os.MkdirAll(dirname, 0700)
 	if err != nil { panic(err) }
 	dbname := filepath.Join(dirname, DBFNAME)
 	db, err := sql.Open("sqlite3", dbname)
@@ -27,4 +32,9 @@ func NewStore(dirname string) *Store {
 		db: db,
 	}
 	return store
+}
+
+func (s *Store) Close() {
+	err := s.db.Close()
+	if err != nil { panic(err) }
 }

@@ -26,6 +26,11 @@ func main() {
 	cfgPath := path.Join(os.Getenv("HOME"), ".mascrc")
 	ReadConfig(cfgPath)
 
+	storePath := path.Join(os.Getenv("HOME"), ".masc")
+	store := NewStore(storePath)
+
 	UIMain()
 	WriteConfig(cfgPath)
+
+	store.Close()
 }

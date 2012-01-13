@@ -5,6 +5,11 @@ import (
 	"io/ioutil"
 )
 
+const (
+	IMAP = iota
+	POP3
+)
+
 type Config struct {
 	Sends       map[string]*SMTPLogin
 
@@ -12,7 +17,24 @@ type Config struct {
 }
 
 type Source struct {
+	Kind   int
+	Server string
+	Uname  string
+	Passwd string
+}
 
+func (s *Source) Update(mc chan<- Message) {
+	switch s.Kind {
+	case IMAP:
+		panic("Not yet implemented")
+	case POP3:
+		client, err := DialTLS(s.Server+":995")
+		if err != nil { panic(err) }
+		err = client.Quit()
+		if err != nil { panic(err) }
+	default:
+		panic("Unkown kind of Source")
+	}
 }
 
 var config *Config

@@ -97,8 +97,30 @@ func init() {
 		"h": alias("help"),
 		"?": alias("help"),
 
-		"pop3": func(toks []string) {
+		"check": func(toks []string) {
+			// check for new messages
+			mc := make(chan Message)
+			go func() {
+				for _, source := range config.Sources {
+					source.Update(mc)
+				}
+				close(mc)
+			}()
+			for m := range mc {
+				println(m.From)
+			}
+		},
 
+		"read": func(toks []string) {
+			// read a message
+		},
+
+		"pop3": func(args []string) {
+			if len(args) != 4 {
+				panic("usage: pop3 name server uname passwd")
+			}
+			source := &Source{POP3, args[1], args[2], args[3]}
+			config.Sources[args[0]] = source
 		},
 
 		"imap": func(toks []string) {
