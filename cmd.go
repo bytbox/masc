@@ -15,7 +15,7 @@ var initInput sync.Once
 var input *bufio.Reader
 
 func prompt() (string, error) {
-	initInput.Do(func (){input = bufio.NewReader(os.Stdin)})
+	initInput.Do(func() { input = bufio.NewReader(os.Stdin) })
 
 	fmt.Print("masc> ")
 	line, _, err := input.ReadLine()
@@ -41,7 +41,9 @@ func tokenize(line string) (toks []string) {
 	for _, c := range line {
 		switch state {
 		case READY:
-			if isWhite(c) { continue }
+			if isWhite(c) {
+				continue
+			}
 			tmp = string(c)
 			state = INTOK
 		case INTOK:
@@ -170,7 +172,9 @@ func init() {
 				lb, _, err = input.ReadLine()
 				l = string(lb)
 			}
-			if err != nil { panic(err) }
+			if err != nil {
+				panic(err)
+			}
 			if l == "n" {
 				fmt.Println("Aborting")
 				return
@@ -196,14 +200,18 @@ func runEditor(filename string) {
 	}
 
 	path, err := exec.LookPath(editor)
-	if err != nil { panic(err) }
+	if err != nil {
+		panic(err)
+	}
 
 	cmd := exec.Command(path, filename)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
-	if err != nil { panic(err) }
+	if err != nil {
+		panic(err)
+	}
 }
 
 func UIMain() {
@@ -212,15 +220,19 @@ func UIMain() {
 	for err == nil {
 		// tokenize the line
 		toks := tokenize(line)
-		if len(toks) == 0 { goto nothing }
-		if toks[0] == "exit" { goto exit }
+		if len(toks) == 0 {
+			goto nothing
+		}
+		if toks[0] == "exit" {
+			goto exit
+		}
 		{
 			action, ok := actions[toks[0]]
 			if !ok {
 				fmt.Println("?")
 				goto nothing
 			}
-			func () {
+			func() {
 				defer func() {
 					err := recover()
 					if err != nil {
@@ -230,7 +242,7 @@ func UIMain() {
 				action(toks[1:])
 			}()
 		}
-nothing:
+	nothing:
 		line, err = prompt()
 	}
 	if err != nil && err != io.EOF {

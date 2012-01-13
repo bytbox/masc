@@ -11,9 +11,9 @@ const (
 )
 
 type Config struct {
-	Sends       map[string]*SMTPLogin
+	Sends map[string]*SMTPLogin
 
-	Sources     map[string]*Source
+	Sources map[string]*Source
 }
 
 type Source struct {
@@ -28,10 +28,29 @@ func (s *Source) Update(mc chan<- Message) {
 	case IMAP:
 		panic("Not yet implemented")
 	case POP3:
-		client, err := DialTLS(s.Server+":995")
-		if err != nil { panic(err) }
+		client, err := DialTLS(s.Server + ":995")
+		if err != nil {
+			panic(err)
+		}
+		err = client.Auth(s.Uname, s.Passwd)
+		if err != nil {
+			panic(err)
+		}
+		msgs, _, err := client.ListAll()
+		if err != nil {
+			panic(err)
+		}
+		for _, m := range msgs {
+			t, err := client.Retr(m)
+			if err != nil {
+				panic(err)
+			}
+			println(t)
+		}
 		err = client.Quit()
-		if err != nil { panic(err) }
+		if err != nil {
+			panic(err)
+		}
 	default:
 		panic("Unkown kind of Source")
 	}
@@ -41,7 +60,7 @@ var config *Config
 
 func NewConfig() *Config {
 	return &Config{
-		Sends: map[string]*SMTPLogin{},
+		Sends:   map[string]*SMTPLogin{},
 		Sources: map[string]*Source{},
 	}
 }

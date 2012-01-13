@@ -44,12 +44,14 @@ func DialTLS(addr string) (*Client, error) {
 // NewClient returns a new Client object using an existing connection.
 func NewClient(conn net.Conn) (*Client, error) {
 	client := &Client{
-		bin: bufio.NewReader(conn),
+		bin:  bufio.NewReader(conn),
 		conn: conn,
 	}
 	// send dud command, to read a line
 	_, err := client.Cmd("")
-	if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
 	return client, nil
 }
 
@@ -64,7 +66,10 @@ func (c *Client) Cmd(format string, args ...interface{}) (string, error) {
 	if l[0:3] != "+OK" {
 		err = errors.New(l[5:])
 	}
-	return l[4:], err
+	if len(l) >= 4 {
+		return l[4:], err
+	}
+	return "", err
 }
 
 func (c *Client) ReadLines() (lines []string, err error) {
@@ -102,7 +107,9 @@ func (c *Client) Pass(password string) (err error) {
 // and Pass methods as appropriate.
 func (c *Client) Auth(username, password string) (err error) {
 	err = c.User(username)
-	if err != nil { return }
+	if err != nil {
+		return
+	}
 	err = c.Pass(password)
 	return
 }
@@ -114,12 +121,18 @@ func (c *Client) Auth(username, password string) (err error) {
 // will be 0.
 func (c *Client) Stat() (count, size int, err error) {
 	l, err := c.Cmd("STAT\r\n")
-	if err != nil { return 0, 0, err }
+	if err != nil {
+		return 0, 0, err
+	}
 	parts := strings.Fields(l)
 	count, err = strconv.Atoi(parts[0])
-	if err != nil { return 0, 0, errors.New("Invalid server response") }
+	if err != nil {
+		return 0, 0, errors.New("Invalid server response")
+	}
 	size, err = strconv.Atoi(parts[1])
-	if err != nil { return 0, 0, errors.New("Invalid server response") }
+	if err != nil {
+		return 0, 0, errors.New("Invalid server response")
+	}
 	return
 }
 
@@ -128,27 +141,39 @@ func (c *Client) Stat() (count, size int, err error) {
 // 0.
 func (c *Client) List(msg int) (size int, err error) {
 	l, err := c.Cmd("LIST %d\r\n", msg)
-	if err != nil { return 0, err }
+	if err != nil {
+		return 0, err
+	}
 	size, err = strconv.Atoi(strings.Fields(l)[1])
-	if err != nil { return 0, errors.New("Invalid server response") }
+	if err != nil {
+		return 0, errors.New("Invalid server response")
+	}
 	return size, nil
 }
 
 // ListAll returns a list of all messages and their sizes.
 func (c *Client) ListAll() (msgs []int, sizes []int, err error) {
 	_, err = c.Cmd("LIST\r\n")
-	if err != nil { return }
+	if err != nil {
+		return
+	}
 	lines, err := c.ReadLines()
-	if err != nil { return }
+	if err != nil {
+		return
+	}
 	msgs = make([]int, len(lines), len(lines))
 	sizes = make([]int, len(lines), len(lines))
 	for i, l := range lines {
 		var m, s int
 		fs := strings.Fields(l)
 		m, err = strconv.Atoi(fs[0])
-		if err != nil { return }
+		if err != nil {
+			return
+		}
 		s, err = strconv.Atoi(fs[1])
-		if err != nil { return }
+		if err != nil {
+			return
+		}
 		msgs[i] = m
 		sizes[i] = s
 	}
@@ -159,7 +184,9 @@ func (c *Client) ListAll() (msgs []int, sizes []int, err error) {
 // whatever the server sent.
 func (c *Client) Retr(msg int) (text string, err error) {
 	_, err = c.Cmd("RETR %d\r\n", msg)
-	if err != nil { return "", err }
+	if err != nil {
+		return "", err
+	}
 	lines, err := c.ReadLines()
 	text = strings.Join(lines, "\n")
 	return
@@ -187,7 +214,9 @@ func (c *Client) Rset() (err error) {
 // Quit sends the QUIT message to the POP3 server and closes the connection.
 func (c *Client) Quit() error {
 	_, err := c.Cmd("QUIT\r\n")
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 	c.conn.Close()
 	return nil
 }

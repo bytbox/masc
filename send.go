@@ -7,9 +7,9 @@ import (
 
 // Represents an outgoing message.
 type Outgoing struct {
-	From    string
-	To      []string
-	Body    string
+	From string
+	To   []string
+	Body string
 }
 
 type SMTPLogin struct {

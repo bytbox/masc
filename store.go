@@ -13,8 +13,9 @@ const (
 )
 
 type Message struct {
-	To []string
-	From string
+	To      []string
+	From    string
+	Content string
 }
 
 // Interface for accessing, searching, and adding messages.
@@ -24,10 +25,14 @@ type Store struct {
 
 func NewStore(dirname string) *Store {
 	err := os.MkdirAll(dirname, 0700)
-	if err != nil { panic(err) }
+	if err != nil {
+		panic(err)
+	}
 	dbname := filepath.Join(dirname, DBFNAME)
 	db, err := sql.Open("sqlite3", dbname)
-	if err != nil {panic(err) }
+	if err != nil {
+		panic(err)
+	}
 	store := &Store{
 		db: db,
 	}
@@ -36,5 +41,7 @@ func NewStore(dirname string) *Store {
 
 func (s *Store) Close() {
 	err := s.db.Close()
-	if err != nil { panic(err) }
+	if err != nil {
+		panic(err)
+	}
 }
