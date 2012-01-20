@@ -13,6 +13,15 @@ var (
 	message string
 )
 
+var messageList = []Message{
+	Message{
+		To: []string{"hey"},
+		Title: "TITLE HERE",
+		From: "there",
+		Content: "hoho",
+	},
+}
+
 var chActions = map[rune]func(){}
 
 var keyActions = map[uint16]func(){}
@@ -43,6 +52,13 @@ func updateSize() {
 func display() {
 	t.Clear()
 
+	// List all messages
+	for i, m := range messageList {
+		w := t.Writer(2, i, t.WHITE, t.BLACK)
+		fmt.Fprintf(w, "%s", m.Title)
+	}
+
+	// Write the error message or otherwise
 	messageWriter := t.Writer(0, height-1, t.WHITE, t.BLACK)
 	fmt.Fprint(messageWriter, message)
 

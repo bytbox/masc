@@ -14,6 +14,7 @@ const (
 
 type Message struct {
 	To      []string
+	Title   string
 	From    string
 	Content string
 }
