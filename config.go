@@ -23,39 +23,6 @@ type Source struct {
 	Passwd string
 }
 
-func (s *Source) Update(mc chan<- Message) {
-	switch s.Kind {
-	case IMAP:
-		panic("Not yet implemented")
-	case POP3:
-		client, err := DialTLS(s.Server + ":995")
-		if err != nil {
-			panic(err)
-		}
-		err = client.Auth(s.Uname, s.Passwd)
-		if err != nil {
-			panic(err)
-		}
-		msgs, _, err := client.ListAll()
-		if err != nil {
-			panic(err)
-		}
-		for _, m := range msgs {
-			t, err := client.Retr(m)
-			if err != nil {
-				panic(err)
-			}
-			println(t)
-		}
-		err = client.Quit()
-		if err != nil {
-			panic(err)
-		}
-	default:
-		panic("Unkown kind of Source")
-	}
-}
-
 var config *Config
 
 func NewConfig() *Config {
