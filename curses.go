@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	t "github.com/bytbox/termbox-go"
 	"log"
 )
@@ -41,11 +42,10 @@ func updateSize() {
 
 func display() {
 	t.Clear()
-	i := 0
-	for _, r := range message {
-		t.ChangeCell(i, height-1, r, t.WHITE, t.BLACK)
-		i++
-	}
+
+	messageWriter := t.Writer(0, height-1, t.WHITE, t.BLACK)
+	fmt.Fprint(messageWriter, message)
+
 	t.Present()
 }
 
