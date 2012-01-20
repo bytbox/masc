@@ -22,7 +22,9 @@ var messageList = []Message{
 	},
 }
 
-var chActions = map[rune]func(){}
+var chActions = map[rune]func(){
+	'u': updateMessages,
+}
 
 var keyActions = map[uint16]func(){}
 
@@ -47,6 +49,10 @@ func act(a func()) {
 func updateSize() {
 	width = t.Width()
 	height = t.Height()
+}
+
+func updateMessages() {
+	panic("not yet implemented")
 }
 
 func display() {
