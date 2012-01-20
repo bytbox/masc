@@ -23,9 +23,9 @@ func unknownAction() {
 func act(a func()) {
 	defer func() {
 		if er := recover(); er != nil {
-			e, ok := er.(error)
+			e, ok := er.(string)
 			if ok {
-				message = e.Error()
+				message = e
 			} else {
 				message = "unknown error"
 			}
@@ -40,7 +40,13 @@ func updateSize() {
 }
 
 func display() {
-
+	t.Clear()
+	i := 0
+	for _, r := range message {
+		t.ChangeCell(i, height-1, r, t.WHITE, t.BLACK)
+		i++
+	}
+	t.Present()
 }
 
 func UIMain() {
