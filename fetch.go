@@ -42,7 +42,7 @@ func (s *Source) Update(mc chan<- Message) {
 			if err != nil {
 				panic(err)
 			}
-			println(t)
+			mc <- makeMessage(t)
 		}
 		err = client.Quit()
 		if err != nil {
@@ -51,4 +51,8 @@ func (s *Source) Update(mc chan<- Message) {
 	default:
 		panic("Unkown kind of Source")
 	}
+}
+
+func makeMessage(c string) (m Message) {
+	return
 }

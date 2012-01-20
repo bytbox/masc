@@ -11,16 +11,8 @@ var (
 	height int
 
 	message string
+	messageList []Message
 )
-
-var messageList = []Message{
-	Message{
-		To: []string{"hey"},
-		Title: "TITLE HERE",
-		From: "there",
-		Content: "hoho",
-	},
-}
 
 var chActions = map[rune]func(){
 	'u': updateMessages,
@@ -52,7 +44,7 @@ func updateSize() {
 }
 
 func updateMessages() {
-	panic("not yet implemented")
+	messageList = UpdateAllList()
 }
 
 func display() {
