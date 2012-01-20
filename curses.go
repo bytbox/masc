@@ -1,7 +1,7 @@
 package main
 
 import (
-	t "github.com/nsf/termbox-go"
+	t "github.com/bytbox/termbox-go"
 	"log"
 )
 
@@ -51,6 +51,9 @@ func display() {
 
 func UIMain() {
 	t.Init()
+	defer func() {
+		t.Shutdown()
+	}()
 	updateSize()
 	e := t.Event{}
 	for {
@@ -78,5 +81,4 @@ func UIMain() {
 	}
 
 Exit:
-	t.Shutdown()
 }
