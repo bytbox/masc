@@ -1,11 +1,11 @@
 package main
 
 import (
-	"exp/sql"
+	"database/sql"
 	"os"
 	"path/filepath"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/bytbox/go-sqlite3"
 )
 
 const (
