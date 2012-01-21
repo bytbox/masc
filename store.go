@@ -54,9 +54,11 @@ func (s *Store) Add(m Message) {
 
 	mid := 0
 	rs, err := tx.Query("SELECT mid FROM headers ORDER BY mid DESC LIMIT 1;")
-	err = rs.Scan(&mid)
+	hn := rs.Next()
+	if hn {
+		rs.Scan(&mid)
+	}
 	rs.Close()
-	if err != nil { mid = 0 }
 	mid++
 
 	for key, val := range m.Headers {
@@ -68,6 +70,15 @@ func (s *Store) Add(m Message) {
 
 	err = tx.Commit()
 	if err != nil { panic(err) }
+}
+
+func (s *Store) ListNew() (ms []Message) {
+	rs, err := s.db.Query(
+		`SELECT DISTINCT mid FROM headers WHERE new;`)
+	if err != nil { panic(err) }
+	mid := 0
+	err = rs.Scan(&mid)
+	return
 }
 
 func (s *Store) Close() {

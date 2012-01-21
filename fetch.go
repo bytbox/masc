@@ -1,7 +1,7 @@
 package main
 
 import (
-	"strings"
+	"bytes"
 )
 
 func UpdateAll() <-chan Message {
@@ -61,23 +61,49 @@ func (s *Source) Update(mc chan<- Message) {
 // implementation of RFC2822.
 func makeMessage(c string) (m Message) {
 	m.Headers = make(map[string]string)
-	lines := strings.Split(c, "\n")
-	ih := true
-	for _, l := range lines {
-		if ih {
-			l = strings.Trim(l, "\r")
-			if len(l) == 0 {
-				ih = false
+
+	// states
+	const (
+		KEY = iota
+		VAL
+	)
+
+	state := KEY
+	kb := bytes.Buffer{}
+	vb := bytes.Buffer{}
+
+	i := 0
+	for {
+		r := c[i]
+		switch state {
+		case KEY:
+			if r == ':' {
+				state = VAL
+				i++
+				for c[i] == ' ' || c[i] == '\t' { i++ }
+				continue
 			}
-			i := strings.Index(l, ":")
-			if i >= 0 {
-				key := l[:i]
-				m.Headers[key] = strings.TrimLeft(l[i+1:], " ")
+			if r == '\r' {
+				goto Content
 			}
-		} else {
-			m.Content += l
+			kb.WriteByte(r)
+		case VAL:
+			if r == ';' && c[i+1] == '\r' {
+				i += 4
+				vb.WriteByte('\n')
+				continue
+			} else if r == '\r' {
+				state = KEY
+				m.Headers[kb.String()] = vb.String()
+				kb.Reset()
+				vb.Reset()
+			}
+			vb.WriteByte(r)
 		}
+		i++
 	}
-	m.Content = c
+
+Content:
+	m.Content = c[i+2:]
 	return
 }
