@@ -53,9 +53,11 @@ type Display struct {
 }
 
 func updateMessages() {
+	// TODO do this in a way that doesn't risk race conditions
 	message <- "updating..."
-	messageList = UpdateAllList()
-	message <- ""
+	ml := UpdateAllList()
+	messageList = append(messageList, ml...)
+	message <- fmt.Sprintf("read %d messages", len(ml))
 }
 
 func display(d Display) {
