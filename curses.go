@@ -69,28 +69,40 @@ func UIMain() {
 		t.Shutdown()
 	}()
 	updateSize()
-	e := t.Event{}
+
+	events := make(chan t.Event)
+
+	go func() {
+		for {
+			e := t.Event{}
+			e.Poll()
+			events <- e
+		}
+	}()
+
 	for {
 		display()
-		e.Poll()
+		select {
+		case e := <-events:
 		switch e.Type {
-		case t.EVENT_KEY:
-			if e.Ch == 'q' {
-				goto Exit
+			case t.EVENT_KEY:
+				if e.Ch == 'q' {
+					goto Exit
+				}
+				a, ok := chActions[e.Ch]
+				if !ok {
+					a, ok = keyActions[e.Key]
+				}
+				if ok {
+					act(a)
+				} else {
+					act(unknownAction)
+				}
+			case t.EVENT_RESIZE:
+				updateSize()
+			default:
+				log.Print("warning: unknown event type")
 			}
-			a, ok := chActions[e.Ch]
-			if !ok {
-				a, ok = keyActions[e.Key]
-			}
-			if ok {
-				act(a)
-			} else {
-				act(unknownAction)
-			}
-		case t.EVENT_RESIZE:
-			updateSize()
-		default:
-			log.Print("warning: unknown event type")
 		}
 	}
 
