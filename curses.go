@@ -44,6 +44,7 @@ func updateSize() {
 
 // Channels for signaling the main routine
 var (
+	escape = make(chan interface{})  // exits safely
 	updates = make(chan interface{}) // updates the screen
 	message = make(chan string)      // updates the message displayed
 )
@@ -114,6 +115,9 @@ func UIMain() {
 	events := make(chan t.Event)
 
 	go func() {
+		defer func() {
+			escape <- nil
+		}()
 		for {
 			e := t.Event{}
 			e.Poll()
@@ -149,6 +153,8 @@ func UIMain() {
 		case <-updates:
 		case m := <-message:
 			d.message = m
+		case <-escape:
+			goto Exit
 		}
 	}
 
