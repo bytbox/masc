@@ -22,6 +22,14 @@ type Store struct {
 	db *sql.DB
 }
 
+const (
+	initHdrs = `CREATE TABLE IF NOT EXISTS headers (
+mid INT
+key TEXT
+val TEXT
+);`
+)
+
 func NewStore(dirname string) *Store {
 	err := os.MkdirAll(dirname, 0700)
 	if err != nil {
@@ -29,9 +37,10 @@ func NewStore(dirname string) *Store {
 	}
 	dbname := filepath.Join(dirname, DBFNAME)
 	db, err := sql.Open("sqlite3", dbname)
-	if err != nil {
-		panic(err)
-	}
+	if err != nil {	panic(err) }
+	_, err = db.Exec(initHdrs)
+	if err != nil { panic(err) }
+
 	store := &Store{
 		db: db,
 	}
