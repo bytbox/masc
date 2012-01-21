@@ -1,5 +1,9 @@
 package main
 
+import (
+	"strings"
+)
+
 func UpdateAll() <-chan Message {
 	mc := make(chan Message)
 	go func(c chan<- Message) {
@@ -53,6 +57,27 @@ func (s *Source) Update(mc chan<- Message) {
 	}
 }
 
+// A quick hack of an RFC822 implementation. Go really needs a proper
+// implementation of RFC2822.
 func makeMessage(c string) (m Message) {
+	m.Headers = make(map[string]string)
+	lines := strings.Split(c, "\n")
+	ih := true
+	for _, l := range lines {
+		if ih {
+			l = strings.Trim(l, "\r")
+			if len(l) == 0 {
+				ih = false
+			}
+			i := strings.Index(l, ":")
+			if i >= 0 {
+				key := l[:i]
+				m.Headers[key] = strings.TrimLeft(l[i+1:], " ")
+			}
+		} else {
+			m.Content += l
+		}
+	}
+	m.Content = c
 	return
 }

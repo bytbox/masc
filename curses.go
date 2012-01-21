@@ -45,11 +45,18 @@ func updateSize() {
 // Channels for signaling the main routine
 var (
 	updates = make(chan interface{}) // updates the screen
-	message = make(chan string) // updates the message displayed
+	message = make(chan string)      // updates the message displayed
 )
 
 type Display struct {
 	message string
+}
+
+func lim(s string, i int) string {
+	if len(s) > i {
+		return s[:i]
+	}
+	return s
 }
 
 func updateMessages() {
@@ -63,10 +70,31 @@ func updateMessages() {
 func display(d Display) {
 	t.Clear()
 
-	// List all messages
+	// Calculate tab-stops
+	tabs := []int{
+		1,
+		2 * width / 8,
+		4 * width / 8,
+		7 * width / 8,
+		width,
+	}
+
+	headers := []string{
+		"From",
+		"To",
+		"Subject",
+	}
+
+	// Headers
+	for i, h := range headers {
+		t.WriteAt(tabs[i], 0, h, t.GREEN, t.BLACK)
+	}
+
+	// Message
 	for i, m := range messageList {
-		w := t.Writer(2, i, t.WHITE, t.BLACK)
-		fmt.Fprintf(w, "%s", m.Title)
+		for j, h := range headers {
+			t.WriteAt(tabs[j], i+1, m.Headers[h], t.WHITE, t.BLACK)
+		}
 	}
 
 	// Write the error message or otherwise
@@ -99,7 +127,7 @@ func UIMain() {
 		display(d)
 		select {
 		case e := <-events:
-		switch e.Type {
+			switch e.Type {
 			case t.EVENT_KEY:
 				if e.Ch == 'q' {
 					goto Exit

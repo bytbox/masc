@@ -13,9 +13,7 @@ const (
 )
 
 type Message struct {
-	To      []string
-	Title   string
-	From    string
+	Headers map[string]string
 	Content string
 }
 
