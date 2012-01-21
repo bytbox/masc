@@ -15,6 +15,8 @@ var (
 	version = flag.Bool("V", false, "Display version information and exit")
 )
 
+var store *Store
+
 func main() {
 	flag.Parse()
 
@@ -27,7 +29,7 @@ func main() {
 	ReadConfig(cfgPath)
 
 	storePath := path.Join(os.Getenv("HOME"), ".masc")
-	store := NewStore(storePath)
+	store = NewStore(storePath)
 
 	UIMain()
 	WriteConfig(cfgPath)

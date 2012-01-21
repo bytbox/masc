@@ -1,5 +1,5 @@
 TARG = masc
-UI = curses.go notify.go
+UI = term.go notify.go
 GOFILES = masc.go pop3.go send.go fetch.go config.go store.go ${UI}
 
 all: ${TARG}

@@ -24,9 +24,10 @@ type Store struct {
 
 const (
 	initHdrs = `CREATE TABLE IF NOT EXISTS headers (
-mid INT
-key TEXT
-val TEXT
+mid INTEGER,
+key TEXT,
+val TEXT,
+new BOOL
 );`
 )
 
@@ -45,6 +46,28 @@ func NewStore(dirname string) *Store {
 		db: db,
 	}
 	return store
+}
+
+func (s *Store) Add(m Message) {
+	tx, err := s.db.Begin()
+	if err != nil { panic(err) }
+
+	mid := 0
+	rs, err := tx.Query("SELECT mid FROM headers ORDER BY mid DESC LIMIT 1;")
+	err = rs.Scan(&mid)
+	rs.Close()
+	if err != nil { mid = 0 }
+	mid++
+
+	for key, val := range m.Headers {
+		_, err = tx.Exec(
+			"INSERT INTO headers VALUES (?, ?, ?, ?);",
+			mid, key, val, true)
+		if err != nil { panic(err) }
+	}
+
+	err = tx.Commit()
+	if err != nil { panic(err) }
 }
 
 func (s *Store) Close() {

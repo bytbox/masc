@@ -26,9 +26,10 @@ func unknownAction() {
 func act(a func()) {
 	defer func() {
 		if er := recover(); er != nil {
-			e, ok := er.(string)
-			if ok {
+			if e, ok := er.(string); ok {
 				message <- e
+			} else if e, ok := er.(error); ok {
+				message <- e.Error()
 			} else {
 				message <- "unknown error"
 			}
@@ -63,9 +64,14 @@ func lim(s string, i int) string {
 func updateMessages() {
 	// TODO do this in a way that doesn't risk race conditions
 	message <- "updating..."
-	ml := UpdateAllList()
-	messageList = append(messageList, ml...)
-	message <- fmt.Sprintf("read %d messages", len(ml))
+	mc := UpdateAll()
+	i := 0
+	for m := range mc {
+		store.Add(m)
+		messageList = append(messageList, m)
+		i++
+	}
+	message <- fmt.Sprintf("read %d messages", i)
 }
 
 func display(d Display) {
@@ -94,7 +100,8 @@ func display(d Display) {
 	// Message
 	for i, m := range messageList {
 		for j, h := range headers {
-			t.WriteAt(tabs[j], i+1, m.Headers[h], t.WHITE, t.BLACK)
+			c := lim(m.Headers[h], tabs[j+1] - tabs[j] - 1)
+			t.WriteAt(tabs[j], i+1, c, t.WHITE, t.BLACK)
 		}
 	}
 
