@@ -53,7 +53,9 @@ type Display struct {
 }
 
 func updateMessages() {
+	message <- "updating..."
 	messageList = UpdateAllList()
+	message <- ""
 }
 
 func display(d Display) {
