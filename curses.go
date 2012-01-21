@@ -10,7 +10,6 @@ var (
 	width  int
 	height int
 
-	message     string
 	messageList []Message
 )
 
@@ -29,9 +28,9 @@ func act(a func()) {
 		if er := recover(); er != nil {
 			e, ok := er.(string)
 			if ok {
-				message = e
+				message <- e
 			} else {
-				message = "unknown error"
+				message <- "unknown error"
 			}
 		}
 	}()
@@ -43,11 +42,21 @@ func updateSize() {
 	height = t.Height()
 }
 
+// Channels for signaling the main routine
+var (
+	updates = make(chan interface{}) // updates the screen
+	message = make(chan string) // updates the message displayed
+)
+
+type Display struct {
+	message string
+}
+
 func updateMessages() {
 	messageList = UpdateAllList()
 }
 
-func display() {
+func display(d Display) {
 	t.Clear()
 
 	// List all messages
@@ -58,7 +67,7 @@ func display() {
 
 	// Write the error message or otherwise
 	messageWriter := t.Writer(0, height-1, t.WHITE, t.BLACK)
-	fmt.Fprint(messageWriter, message)
+	fmt.Fprint(messageWriter, d.message)
 
 	t.Present()
 }
@@ -80,8 +89,10 @@ func UIMain() {
 		}
 	}()
 
+	d := Display{}
+
 	for {
-		display()
+		display(d)
 		select {
 		case e := <-events:
 		switch e.Type {
@@ -94,15 +105,18 @@ func UIMain() {
 					a, ok = keyActions[e.Key]
 				}
 				if ok {
-					act(a)
+					go act(a)
 				} else {
-					act(unknownAction)
+					go act(unknownAction)
 				}
 			case t.EVENT_RESIZE:
 				updateSize()
 			default:
 				log.Print("warning: unknown event type")
 			}
+		case <-updates:
+		case m := <-message:
+			d.message = m
 		}
 	}
 
