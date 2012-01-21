@@ -10,7 +10,7 @@ var (
 	width  int
 	height int
 
-	message string
+	message     string
 	messageList []Message
 )
 
