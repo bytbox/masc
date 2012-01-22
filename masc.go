@@ -36,11 +36,4 @@ func main() {
 	WriteConfig(cfgPath)
 
 	store.Close()
-
-	msg := makeMessage("a: b;\r\n\txyz\r\n\r\nc")
-	for k, v := range msg.Headers {
-		println(k)
-		println(v)
-	}
-	println(msg.Content)
 }

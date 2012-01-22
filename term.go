@@ -3,14 +3,13 @@ package main
 import (
 	"fmt"
 	t "github.com/bytbox/termbox-go"
+	. "github.com/bytbox/go-mail"
 	"log"
 )
 
 var (
 	width  int
 	height int
-
-	messageList []Message
 )
 
 var chActions = map[rune]func(){
@@ -68,10 +67,20 @@ func updateMessages() {
 	i := 0
 	for m := range mc {
 		store.Add(m)
-		messageList = append(messageList, m)
+		store.messageList = append(store.messageList, m)
 		i++
 	}
 	message <- fmt.Sprintf("read %d messages", i)
+}
+
+func lookup(m Message, k string) string {
+	// TODO this is a hack
+	for _, h := range m.RawHeaders {
+		if k == h.Key {
+			return h.Value
+		}
+	}
+	return "---"
 }
 
 func display(d Display) {
@@ -98,9 +107,9 @@ func display(d Display) {
 	}
 
 	// Message
-	for i, m := range messageList {
+	for i, m := range store.messageList {
 		for j, h := range headers {
-			c := lim(m.Headers[h], tabs[j+1] - tabs[j] - 1)
+			c := lim(lookup(m, h), tabs[j+1] - tabs[j] - 1)
 			t.WriteAt(tabs[j], i+1, c, t.WHITE, t.BLACK)
 		}
 	}
