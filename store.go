@@ -19,18 +19,22 @@ type Store struct {
 	messageList []Message
 }
 
-const (
-	initMsgs = `CREATE TABLE IF NOT EXISTS messages (
-mid  INTEGER,
+var inits = []string{
+	`CREATE TABLE IF NOT EXISTS messages (
+id  INTEGER,
 body TEXT,
 new  BOOL
-);`
-	initHdrs = `CREATE TABLE IF NOT EXISTS headers (
+);`,
+	`CREATE TABLE IF NOT EXISTS headers (
 mid INTEGER,
 key TEXT,
 val TEXT
-);`
-)
+);`,
+	`CREATE INDEX IF NOT EXISTS messages_mid_idx ON messages (mid);`,
+	`CREATE INDEX IF NOT EXISTS messages_new_idx ON messages (new);`,
+	`CREATE INDEX IF NOT EXISTS headers_mid_idx ON headers (mid);`,
+	`CREATE INDEX IF NOT EXISTS headers_kv_idx ON headers (key, val);`,
+}
 
 func NewStore(dirname string) *Store {
 	err := os.MkdirAll(dirname, 0700)
@@ -40,10 +44,11 @@ func NewStore(dirname string) *Store {
 	dbname := filepath.Join(dirname, DBFNAME)
 	db, err := sql.Open("sqlite3", dbname)
 	if err != nil {	panic(err) }
-	_, err = db.Exec(initHdrs)
-	if err != nil { panic(err) }
-	_, err = db.Exec(initMsgs)
-	if err != nil { panic(err) }
+
+	for _, cmd := range inits {
+		_, err = db.Exec(cmd)
+		if err != nil { panic(err) }
+	}
 
 	store := &Store{
 		db: db,
