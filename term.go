@@ -159,11 +159,11 @@ func UIMain() {
 				if e.Ch == 'q' {
 					goto Exit
 				}
-				if e.Key == t.KEY_ARROW_UP {
+				if e.Key == t.KEY_ARROW_UP || e.Ch == 'k'{
 					if d.selected > 0 {
 						d.selected--
 					}
-				} else if e.Key == t.KEY_ARROW_DOWN {
+				} else if e.Key == t.KEY_ARROW_DOWN || e.Ch == 'j' {
 					if d.selected < len(store.messageList)-1 {
 						d.selected++
 					}
