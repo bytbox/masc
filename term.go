@@ -16,8 +16,6 @@ var chActions = map[rune]func(){
 	'u': updateMessages,
 }
 
-var keyActions = map[uint16]func(){}
-
 func unknownAction() {
 	panic("unrecognized keystroke")
 }
@@ -161,14 +159,21 @@ func UIMain() {
 				if e.Ch == 'q' {
 					goto Exit
 				}
-				a, ok := chActions[e.Ch]
-				if !ok {
-					a, ok = keyActions[e.Key]
-				}
-				if ok {
-					go act(a)
+				if e.Key == t.KEY_ARROW_UP {
+					if d.selected > 0 {
+						d.selected--
+					}
+				} else if e.Key == t.KEY_ARROW_DOWN {
+					if d.selected < len(store.messageList)-1 {
+						d.selected++
+					}
 				} else {
-					go act(unknownAction)
+					a, ok := chActions[e.Ch]
+					if ok {
+						go act(a)
+					} else {
+						go act(unknownAction)
+					}
 				}
 			case t.EVENT_RESIZE:
 				updateSize()
