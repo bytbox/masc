@@ -53,11 +53,12 @@ var (
 	execProg    = make(chan []string)    // execProgutes program with arguments
 )
 
-type Display struct {
-	message   string
-	selected  int // this is the row of the currently selected message
-	screenpos int
-}
+// display information
+var (
+	d_message   string
+	d_selected  int // this is the row of the currently selected message
+	d_screenpos int
+)
 
 func updateMessages() {
 	// TODO do this in a way that doesn't risk race conditions
@@ -83,7 +84,8 @@ func lookup(m Message, k string) string {
 }
 
 func readMessage() {
-	execProg <- []string{"less"}
+	tmpFile := mkTemp(store.messageList[d_selected].Body)
+	execProg <- []string{"less", tmpFile}
 }
 
 func replyMessage() {
@@ -94,15 +96,15 @@ func writeMessage() {
 	execProg <- []string{"vim"}
 }
 
-func display(d Display) {
+func display() {
 	t.Clear()
 
 	// Calculate tab-stops
 	tabs := []int{
 		1,
-		2 * width / 8,
-		4 * width / 8,
-		7 * width / 8,
+		3 * width / 16,
+		6 * width / 16,
+		13 * width / 16,
 		width,
 	}
 
@@ -110,6 +112,7 @@ func display(d Display) {
 		"From",
 		"To",
 		"Subject",
+		"Date",
 	}
 
 	// Headers
@@ -119,14 +122,14 @@ func display(d Display) {
 
 	// Message
 	for
-		i := d.screenpos;
-		i < min(height-2+d.screenpos, len(store.messageList));
+		i := d_screenpos;
+		i < min(height-2+d_screenpos, len(store.messageList));
 		i++ {
 		m := store.messageList[i]
 		var fg = uint16(t.WHITE)
 		var bg = uint16(t.BLACK)
-		hp := i-d.screenpos+1
-		if i == d.selected {
+		hp := i-d_screenpos+1
+		if i == d_selected {
 			bg = t.RED
 		}
 		for x := 0; x < width; x++ {
@@ -140,7 +143,7 @@ func display(d Display) {
 
 	// Write the error message or otherwise
 	messageWriter := t.Writer(0, height-1, t.WHITE, t.BLACK)
-	fmt.Fprint(messageWriter, d.message)
+	fmt.Fprint(messageWriter, d_message)
 
 	t.Present()
 }
@@ -165,10 +168,8 @@ func UIMain() {
 		}
 	}()
 
-	d := Display{}
-
 	for {
-		display(d)
+		display()
 		select {
 		case e := <-events:
 			switch e.Type {
@@ -177,12 +178,12 @@ func UIMain() {
 					goto Exit
 				}
 				if e.Key == t.KEY_ARROW_UP || e.Ch == 'k'{
-					if d.selected > 0 {
-						d.selected--
+					if d_selected > 0 {
+						d_selected--
 					}
 				} else if e.Key == t.KEY_ARROW_DOWN || e.Ch == 'j' {
-					if d.selected < len(store.messageList)-1 {
-						d.selected++
+					if d_selected < len(store.messageList)-1 {
+						d_selected++
 					}
 				} else {
 					a, ok := chActions[e.Ch]
@@ -192,11 +193,11 @@ func UIMain() {
 						go act(unknownAction)
 					}
 				}
-				if d.selected < d.screenpos+1 {
-					d.screenpos = max(d.selected-1, 0)
+				if d_selected < d_screenpos+1 {
+					d_screenpos = max(d_selected-1, 0)
 				}
-				if d.selected > d.screenpos + height-4 {
-					d.screenpos++
+				if d_selected > d_screenpos + height-4 {
+					d_screenpos++
 				}
 			case t.EVENT_RESIZE:
 				updateSize()
@@ -219,7 +220,7 @@ func UIMain() {
 			t.Init()
 			updateSize()
 		case m := <-message:
-			d.message = m
+			d_message = m
 		case <-escape:
 			goto Exit
 		}
