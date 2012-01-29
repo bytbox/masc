@@ -52,13 +52,6 @@ type Display struct {
 	selected int // this is the row of the currently selected message
 }
 
-func lim(s string, i int) string {
-	if len(s) > i {
-		return s[:i]
-	}
-	return s
-}
-
 func updateMessages() {
 	// TODO do this in a way that doesn't risk race conditions
 	message <- "updating..."
@@ -107,6 +100,7 @@ func display(d Display) {
 
 	// Message
 	for i, m := range store.messageList {
+		if i == height-2 { break }
 		var fg = uint16(t.WHITE)
 		var bg = uint16(t.BLACK)
 		if i == d.selected {

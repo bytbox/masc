@@ -1,6 +1,6 @@
 TARG = masc
 UI = term.go notify.go
-GOFILES = masc.go pop3.go send.go fetch.go config.go store.go ${UI}
+GOFILES = masc.go pop3.go send.go fetch.go config.go store.go util.go ${UI}
 
 all: ${TARG}
 
