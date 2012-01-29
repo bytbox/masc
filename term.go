@@ -48,8 +48,9 @@ var (
 )
 
 type Display struct {
-	message  string
-	selected int // this is the row of the currently selected message
+	message   string
+	selected  int // this is the row of the currently selected message
+	screenpos int
 }
 
 func updateMessages() {
@@ -99,19 +100,23 @@ func display(d Display) {
 	}
 
 	// Message
-	for i, m := range store.messageList {
-		if i == height-2 { break }
+	for
+		i := d.screenpos;
+		i < min(height-2+d.screenpos, len(store.messageList));
+		i++ {
+		m := store.messageList[i]
 		var fg = uint16(t.WHITE)
 		var bg = uint16(t.BLACK)
+		hp := i-d.screenpos+1
 		if i == d.selected {
 			bg = t.RED
 		}
 		for x := 0; x < width; x++ {
-			t.ChangeCell(x, i+1, ' ', fg, bg)
+			t.ChangeCell(x, hp, ' ', fg, bg)
 		}
 		for j, h := range headers {
 			c := lim(lookup(m, h), tabs[j+1] - tabs[j] - 1)
-			t.WriteAt(tabs[j], i+1, c, fg, bg)
+			t.WriteAt(tabs[j], hp, c, fg, bg)
 		}
 	}
 
@@ -168,6 +173,12 @@ func UIMain() {
 					} else {
 						go act(unknownAction)
 					}
+				}
+				if d.selected < d.screenpos+1 {
+					d.screenpos = max(d.selected-1, 0)
+				}
+				if d.selected > d.screenpos + height-4 {
+					d.screenpos++
 				}
 			case t.EVENT_RESIZE:
 				updateSize()

@@ -6,3 +6,17 @@ func lim(s string, i int) string {
 	}
 	return s
 }
+
+func min(a, b int) int {
+	if a > b {
+		return b
+	}
+	return a
+}
+
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
