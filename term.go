@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+	"os/exec"
 	"fmt"
 	t "github.com/bytbox/termbox-go"
 	. "github.com/bytbox/go-mail"
@@ -13,7 +15,10 @@ var (
 )
 
 var chActions = map[rune]func(){
+	'r': readMessage,
+	'R': replyMessage,
 	'u': updateMessages,
+	'm': writeMessage,
 }
 
 func unknownAction() {
@@ -45,6 +50,7 @@ var (
 	escape = make(chan interface{})  // exits safely
 	updates = make(chan interface{}) // updates the screen
 	message = make(chan string)      // updates the message displayed
+	execProg    = make(chan []string)    // execProgutes program with arguments
 )
 
 type Display struct {
@@ -74,6 +80,18 @@ func lookup(m Message, k string) string {
 		}
 	}
 	return "---"
+}
+
+func readMessage() {
+	execProg <- []string{"less"}
+}
+
+func replyMessage() {
+	execProg <- []string{"vim"}
+}
+
+func writeMessage() {
+	execProg <- []string{"vim"}
 }
 
 func display(d Display) {
@@ -186,6 +204,20 @@ func UIMain() {
 				log.Print("warning: unknown event type")
 			}
 		case <-updates:
+		case p := <-execProg:
+			t.Shutdown()
+			cmd := p[0]
+			args := p[1:]
+			c := exec.Command(cmd, args...)
+			c.Stdin = os.Stdin
+			c.Stdout = os.Stdout
+			c.Stderr = os.Stderr
+			e := c.Start()
+			if e != nil { panic(e) }
+			e = c.Wait()
+			if e != nil { panic(e) }
+			t.Init()
+			updateSize()
 		case m := <-message:
 			d.message = m
 		case <-escape:
