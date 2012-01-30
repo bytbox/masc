@@ -2,6 +2,7 @@ package main
 
 import (
 	. "github.com/bytbox/go-mail"
+	. "github.com/bytbox/go-pop3"
 )
 
 func UpdateAll() <-chan Message {
